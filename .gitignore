@@ -6,3 +6,10 @@ dist
 .env.*
 coverage
 .vite
+
+# local demo screenshots
+demo/shots
+
+# IDE
+.idea
+.vscode

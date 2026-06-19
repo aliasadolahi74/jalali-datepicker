@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/aliasadolahi74/jalali-datepicker/main/media/cover.png" alt="jalali-datepicker — RTL-first Persian date picker for React" width="100%" />
+</p>
+
 # jalali-datepicker
 
 A self-contained, **RTL-first Persian (Jalali / Khorshidi) date picker** for React.
