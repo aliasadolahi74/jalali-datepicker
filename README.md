@@ -19,9 +19,9 @@ The engine is **dayjs + [`jalaliday`](https://www.npmjs.com/package/jalaliday)**
 ## Install
 
 ```bash
-npm install jalali-datepicker dayjs jalaliday
+npm install @aliasadollahi/jalali-datepicker dayjs jalaliday
 # or
-yarn add jalali-datepicker dayjs jalaliday
+yarn add @aliasadollahi/jalali-datepicker dayjs jalaliday
 ```
 
 `react` (>=18) is a peer dependency. `dayjs` and `jalaliday` are runtime
@@ -32,8 +32,8 @@ you can pin them yourself if you wish.
 
 ```tsx
 import { useState } from 'react';
-import { JalaliDatePicker, toGregorian, type JalaliDate } from 'jalali-datepicker';
-import 'jalali-datepicker/styles.css'; // import once, anywhere
+import { JalaliDatePicker, toGregorian, type JalaliDate } from '@aliasadollahi/jalali-datepicker';
+import '@aliasadollahi/jalali-datepicker/styles.css'; // import once, anywhere
 
 function Example() {
   const [value, setValue] = useState<JalaliDate | null>(null);
@@ -48,14 +48,14 @@ function Example() {
 }
 ```
 
-> **Don't forget `import 'jalali-datepicker/styles.css'`** once in your app — the
+> **Don't forget `import '@aliasadollahi/jalali-datepicker/styles.css'`** once in your app — the
 > component ships its styles as a separate stylesheet.
 
 `JalaliDate` is `{ year, month /* 1-based */, day }` — the only date shape the API
 exposes (dayjs never leaks out). Convert a selection at the end:
 
 ```ts
-import { toTimestamp, toGregorian, toJalali } from 'jalali-datepicker';
+import { toTimestamp, toGregorian, toJalali } from '@aliasadollahi/jalali-datepicker';
 
 toTimestamp(value);                  // epoch ms (local midnight)
 toGregorian(value, 'YYYY-MM-DD');    // "2025-04-21"
@@ -65,7 +65,7 @@ toJalali(value, 'dddd D MMMM YYYY'); // "دوشنبه ۱ اردیبهشت ۱۴۰
 ### Range selection
 
 ```tsx
-import { JalaliDatePicker, type JalaliRange } from 'jalali-datepicker';
+import { JalaliDatePicker, type JalaliRange } from '@aliasadollahi/jalali-datepicker';
 
 <JalaliDatePicker
   selectionMode="range"
@@ -77,7 +77,7 @@ import { JalaliDatePicker, type JalaliRange } from 'jalali-datepicker';
 ### Headless hook
 
 ```ts
-import { useJalaliCalendar } from 'jalali-datepicker';
+import { useJalaliCalendar } from '@aliasadollahi/jalali-datepicker';
 
 const cal = useJalaliCalendar({ value, onChange, mode: 'instant' });
 // cal.weeks, cal.monthOptions, cal.yearOptions, cal.goPrev/goNext, cal.selectDay, ...
@@ -100,7 +100,7 @@ const cal = useJalaliCalendar({ value, onChange, mode: 'instant' });
 ## Injecting days off / holidays
 
 ```ts
-import { IRAN_HOLIDAYS, type HolidayConfig } from 'jalali-datepicker';
+import { IRAN_HOLIDAYS, type HolidayConfig } from '@aliasadollahi/jalali-datepicker';
 
 const holidays: HolidayConfig = {
   weekends: [6], // Persian weekday index: 0 = Saturday … 6 = Friday

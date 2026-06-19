@@ -11,7 +11,7 @@ import type { HolidayConfig } from './types';
  * Jalali rule. Inject them per year as `specific` rules, for example:
  *
  * ```ts
- * import { IRAN_HOLIDAYS } from 'jalali-datepicker';
+ * import { IRAN_HOLIDAYS } from '@aliasadollahi/jalali-datepicker';
  *
  * const holidays = {
  *   ...IRAN_HOLIDAYS,
