@@ -5,13 +5,13 @@
   "type": "module",
   "license": "MIT",
   "author": "Ali Asadollahi",
-  "homepage": "https://github.com/ali-asadollahi/jalali-datepicker#readme",
+  "homepage": "https://github.com/aliasadolahi74/jalali-datepicker#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ali-asadollahi/jalali-datepicker.git"
+    "url": "git+https://github.com/aliasadolahi74/jalali-datepicker.git"
   },
   "bugs": {
-    "url": "https://github.com/ali-asadollahi/jalali-datepicker/issues"
+    "url": "https://github.com/aliasadolahi74/jalali-datepicker/issues"
   },
   "keywords": [
     "jalali",
