@@ -1,0 +1,87 @@
+{
+  "name": "jalali-datepicker",
+  "version": "0.1.0",
+  "description": "A self-contained, RTL-first Persian (Jalali / Khorshidi) date picker for React — single & range selection, injectable holidays, headless hook, themeable via CSS variables, no Tailwind.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Ali Asadollahi",
+  "homepage": "https://github.com/ali-asadollahi/jalali-datepicker#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ali-asadollahi/jalali-datepicker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ali-asadollahi/jalali-datepicker/issues"
+  },
+  "keywords": [
+    "jalali",
+    "shamsi",
+    "khorshidi",
+    "persian",
+    "iran",
+    "calendar",
+    "datepicker",
+    "date-picker",
+    "react",
+    "rtl",
+    "dayjs"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles.css": "./dist/jalali-datepicker.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build && tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.21",
+    "jalaliday": "^3.1.1"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": false
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19.2.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.17.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "prettier": "^3.4.2",
+    "react": "^19.2.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.18.0",
+    "vite": "^6.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
