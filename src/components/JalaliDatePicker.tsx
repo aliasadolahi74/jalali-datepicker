@@ -1,7 +1,10 @@
 'use client';
 
 import type { JalaliDate, JalaliRange } from '../core/types';
-import type { CommitMode } from '../react/useJalaliCalendar';
+import type {
+  CommitMode,
+  UseJalaliCalendarResult,
+} from '../react/useJalaliCalendar';
 import { useJalaliCalendar } from '../react/useJalaliCalendar';
 import type { HolidayConfig } from '../holidays/types';
 import { cn } from '../utils/cn';
@@ -46,43 +49,21 @@ interface RangeModeProps extends CommonProps {
 
 export type JalaliDatePickerProps = SingleModeProps | RangeModeProps;
 
-/**
- * Inline Jalali calendar (single date or range). Self-contained and RTL by
- * construction (`dir="rtl"` is set on the root, independent of the host's
- * direction). Pair it with any popover/dialog/sheet to make a field — the
- * calendar itself takes no opinion on how it is presented.
- */
-export function JalaliDatePicker(props: JalaliDatePickerProps) {
-  const { className, showFooter = true, showToday = true } = props;
-
-  const cal = useJalaliCalendar({
-    selectionMode: props.selectionMode,
-    value: props.value,
-    defaultValue: props.defaultValue,
-    onChange: props.onChange as
-      | ((value: JalaliDate | JalaliRange) => void)
-      | undefined,
-    minDate: props.minDate,
-    maxDate: props.maxDate,
-    disabledDate: props.disabledDate,
-    holidays: props.holidays,
-    mode: props.mode,
-  });
-
-  const handleConfirm = () => {
-    const result = cal.confirm();
-    if (props.selectionMode === 'range') {
-      props.onConfirm?.((result as JalaliRange | null) ?? null);
-    } else {
-      props.onConfirm?.((result as JalaliDate | null) ?? null);
-    }
-  };
-
-  const handleCancel = () => {
-    cal.reset();
-    props.onCancel?.();
-  };
-
+function JalaliDatePickerBody({
+  cal,
+  className,
+  showFooter,
+  showToday,
+  onConfirm,
+  onCancel,
+}: {
+  cal: UseJalaliCalendarResult;
+  className?: string;
+  showFooter: boolean;
+  showToday: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
   return (
     <div dir="rtl" className={cn(styles.root, className)}>
       <CalendarHeader cal={cal} />
@@ -106,10 +87,83 @@ export function JalaliDatePicker(props: JalaliDatePickerProps) {
         <CalendarFooter
           showToday={showToday}
           onToday={cal.goToToday}
-          onConfirm={handleConfirm}
-          onCancel={handleCancel}
+          onConfirm={onConfirm}
+          onCancel={onCancel}
         />
       )}
     </div>
   );
+}
+
+function JalaliDatePickerSingle(props: SingleModeProps) {
+  const { className, showFooter = true, showToday = true } = props;
+
+  const cal = useJalaliCalendar({
+    selectionMode: 'single',
+    value: props.value,
+    defaultValue: props.defaultValue,
+    onChange: props.onChange,
+    minDate: props.minDate,
+    maxDate: props.maxDate,
+    disabledDate: props.disabledDate,
+    holidays: props.holidays,
+    mode: props.mode,
+  });
+
+  return (
+    <JalaliDatePickerBody
+      cal={cal}
+      className={className}
+      showFooter={showFooter}
+      showToday={showToday}
+      onConfirm={() => props.onConfirm?.(cal.confirm())}
+      onCancel={() => {
+        cal.reset();
+        props.onCancel?.();
+      }}
+    />
+  );
+}
+
+function JalaliDatePickerRange(props: RangeModeProps) {
+  const { className, showFooter = true, showToday = true } = props;
+
+  const cal = useJalaliCalendar({
+    selectionMode: 'range',
+    value: props.value,
+    defaultValue: props.defaultValue,
+    onChange: props.onChange,
+    minDate: props.minDate,
+    maxDate: props.maxDate,
+    disabledDate: props.disabledDate,
+    holidays: props.holidays,
+    mode: props.mode,
+  });
+
+  return (
+    <JalaliDatePickerBody
+      cal={cal}
+      className={className}
+      showFooter={showFooter}
+      showToday={showToday}
+      onConfirm={() => props.onConfirm?.(cal.confirm())}
+      onCancel={() => {
+        cal.reset();
+        props.onCancel?.();
+      }}
+    />
+  );
+}
+
+/**
+ * Inline Jalali calendar (single date or range). Self-contained and RTL by
+ * construction (`dir="rtl"` is set on the root, independent of the host's
+ * direction). Pair it with any popover/dialog/sheet to make a field — the
+ * calendar itself takes no opinion on how it is presented.
+ */
+export function JalaliDatePicker(props: JalaliDatePickerProps) {
+  if (props.selectionMode === 'range') {
+    return <JalaliDatePickerRange {...props} />;
+  }
+  return <JalaliDatePickerSingle {...props} />;
 }

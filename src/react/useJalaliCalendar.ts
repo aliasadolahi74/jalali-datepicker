@@ -40,15 +40,12 @@ export type CommitMode = 'instant' | 'confirm';
 /** Whatever the calendar currently holds, depending on {@link SelectionKind}. */
 export type JalaliSelection = JalaliDate | JalaliRange | null;
 
-export interface UseJalaliCalendarOptions {
-  /** Single date or a range. Default `'single'`. */
-  selectionMode?: SelectionKind;
-  /** Controlled selected value (a `JalaliDate` in single mode, a `JalaliRange` in range mode). */
-  value?: JalaliSelection;
-  /** Initial value when uncontrolled. */
-  defaultValue?: JalaliSelection;
-  /** Fired when a value is committed (immediately in `instant` mode, on `confirm()` in `confirm` mode). */
-  onChange?: (value: JalaliDate | JalaliRange) => void;
+/** Committed/staged value for a given {@link SelectionKind}. */
+export type SelectionForMode<M extends SelectionKind> = M extends 'range'
+  ? JalaliRange | null
+  : JalaliDate | null;
+
+interface UseJalaliCalendarOptionsBase {
   minDate?: JalaliDate | null;
   maxDate?: JalaliDate | null;
   /** Return `true` to disable a specific day. */
@@ -58,6 +55,26 @@ export interface UseJalaliCalendarOptions {
   /** `'instant'` commits on click; `'confirm'` stages a draft until `confirm()`. Default `'confirm'`. */
   mode?: CommitMode;
 }
+
+export interface UseJalaliCalendarSingleOptions extends UseJalaliCalendarOptionsBase {
+  /** Single date selection. Default `'single'`. */
+  selectionMode?: 'single';
+  value?: JalaliDate | null;
+  defaultValue?: JalaliDate | null;
+  /** Fired when a value is committed (immediately in `instant` mode, on `confirm()` in `confirm` mode). */
+  onChange?: (value: JalaliDate) => void;
+}
+
+export interface UseJalaliCalendarRangeOptions extends UseJalaliCalendarOptionsBase {
+  selectionMode: 'range';
+  value?: JalaliRange | null;
+  defaultValue?: JalaliRange | null;
+  onChange?: (value: JalaliRange) => void;
+}
+
+export type UseJalaliCalendarOptions =
+  | UseJalaliCalendarSingleOptions
+  | UseJalaliCalendarRangeOptions;
 
 export interface EnrichedDayCell extends BaseDayCell {
   isSelected: boolean;
@@ -90,7 +107,7 @@ export interface YearOption {
   isDisabled: boolean;
 }
 
-export interface UseJalaliCalendarResult {
+interface UseJalaliCalendarResultBase {
   view: CalendarView;
   setView: (view: CalendarView) => void;
   cursor: { year: number; month: number };
@@ -104,19 +121,23 @@ export interface UseJalaliCalendarResult {
   goToToday: () => void;
   canGoPrev: boolean;
   canGoNext: boolean;
-  selectionMode: SelectionKind;
-  selected: JalaliSelection;
   selectDay: (cell: BaseDayCell) => void;
   selectMonth: (month: number) => void;
   selectYear: (year: number) => void;
   /** Range mode only: set the hovered day to preview the in-progress span (pass `null` to clear). */
   hoverDay: (date: JalaliDate | null) => void;
   isConfirmMode: boolean;
-  /** Commit the staged selection. Returns it (or null). */
-  confirm: () => JalaliSelection;
   /** Revert the staged selection back to the committed value (used for "cancel"). */
   reset: () => void;
 }
+
+export type UseJalaliCalendarResult<M extends SelectionKind = SelectionKind> =
+  UseJalaliCalendarResultBase & {
+    selectionMode: M;
+    selected: SelectionForMode<M>;
+    /** Commit the staged selection. Returns it (or null). */
+    confirm: () => SelectionForMode<M>;
+  };
 
 const pageStartFor = (year: number): number =>
   year - (((year % YEARS_PER_PAGE) + YEARS_PER_PAGE) % YEARS_PER_PAGE);
@@ -139,13 +160,18 @@ const selectionKey = (value: JalaliSelection): string =>
   selectionDates(value).map(dateKey).join('|') || 'none';
 
 export function useJalaliCalendar(
-  options: UseJalaliCalendarOptions = {}
+  options?: UseJalaliCalendarSingleOptions,
+): UseJalaliCalendarResult<'single'>;
+export function useJalaliCalendar(
+  options: UseJalaliCalendarRangeOptions,
+): UseJalaliCalendarResult<'range'>;
+export function useJalaliCalendar(
+  options: UseJalaliCalendarOptions = {},
 ): UseJalaliCalendarResult {
   const {
     selectionMode = 'single',
     value,
     defaultValue = null,
-    onChange,
     minDate = null,
     maxDate = null,
     disabledDate,
@@ -193,12 +219,12 @@ export function useJalaliCalendar(
       if (maxDate && compareJalali(date, maxDate) > 0) return true;
       return disabledDate ? disabledDate(date) : false;
     },
-    [minDate, maxDate, disabledDate]
+    [minDate, maxDate, disabledDate],
   );
 
   const grid = useMemo(
     () => buildMonthGrid(cursor.year, cursor.month),
-    [cursor.year, cursor.month]
+    [cursor.year, cursor.month],
   );
 
   // Normalize the current selection (plus any hover preview) into ordered
@@ -243,7 +269,7 @@ export function useJalaliCalendar(
             isRangeEnd,
             isInRange,
           };
-        })
+        }),
       ),
     [
       grid,
@@ -253,15 +279,27 @@ export function useJalaliCalendar(
       rangeHi,
       isDayDisabled,
       holidays,
-    ]
+    ],
   );
 
-  const commit = useCallback(
-    (next: JalaliDate | JalaliRange) => {
+  const commitDate = useCallback(
+    (next: JalaliDate) => {
       if (!isControlled) setInternalCommitted(next);
-      onChange?.(next);
+      if (options.selectionMode !== 'range') {
+        options.onChange?.(next);
+      }
     },
-    [isControlled, onChange]
+    [isControlled, options],
+  );
+
+  const commitRange = useCallback(
+    (next: JalaliRange) => {
+      if (!isControlled) setInternalCommitted(next);
+      if (options.selectionMode === 'range') {
+        options.onChange?.(next);
+      }
+    },
+    [isControlled, options],
   );
 
   const moveCursorToCell = useCallback(
@@ -270,7 +308,7 @@ export function useJalaliCalendar(
         setCursor({ year: cell.date.year, month: cell.date.month });
       }
     },
-    [cursor.month, cursor.year]
+    [cursor.month, cursor.year],
   );
 
   const selectDay = useCallback(
@@ -290,15 +328,23 @@ export function useJalaliCalendar(
         setSelected(next);
         setHoverDate(null);
         moveCursorToCell(cell);
-        if (mode === 'instant' && next.end != null) commit(next);
+        if (mode === 'instant' && next.end != null) commitRange(next);
         return;
       }
 
       setSelected(cell.date);
       moveCursorToCell(cell);
-      if (mode === 'instant') commit(cell.date);
+      if (mode === 'instant') commitDate(cell.date);
     },
-    [isDayDisabled, selectionMode, selected, moveCursorToCell, mode, commit]
+    [
+      isDayDisabled,
+      selectionMode,
+      selected,
+      moveCursorToCell,
+      mode,
+      commitDate,
+      commitRange,
+    ],
   );
 
   const hoverDay = useCallback(
@@ -306,7 +352,7 @@ export function useJalaliCalendar(
       if (selectionMode !== 'range') return;
       setHoverDate(date);
     },
-    [selectionMode]
+    [selectionMode],
   );
 
   const selectMonth = useCallback((month: number) => {
@@ -327,9 +373,9 @@ export function useJalaliCalendar(
     // navigates (selecting an endpoint there would be ambiguous).
     if (selectionMode === 'single' && !isDayDisabled(today)) {
       setSelected(today);
-      if (mode === 'instant') commit(today);
+      if (mode === 'instant') commitDate(today);
     }
-  }, [selectionMode, isDayDisabled, mode, commit]);
+  }, [selectionMode, isDayDisabled, mode, commitDate]);
 
   const step = useCallback(
     (direction: 1 | -1) => {
@@ -341,7 +387,7 @@ export function useJalaliCalendar(
         return { ...current, year: current.year + direction * YEARS_PER_PAGE };
       });
     },
-    [view]
+    [view],
   );
 
   const goPrev = useCallback(() => step(-1), [step]);
@@ -356,7 +402,7 @@ export function useJalaliCalendar(
           !minDate ||
           compareJalali(
             { ...prev, day: daysInMonth(prev.year, prev.month) },
-            minDate
+            minDate,
           ) >= 0,
         canGoNext: !maxDate || compareJalali({ ...next, day: 1 }, maxDate) <= 0,
       };
@@ -386,7 +432,7 @@ export function useJalaliCalendar(
         month,
         label,
         isSelected: selectedDates.some(
-          (d) => d.year === cursor.year && d.month === month
+          (d) => d.year === cursor.year && d.month === month,
         ),
         isCurrent: today.year === cursor.year && today.month === month,
         isDisabled: Boolean(before || after),
@@ -405,7 +451,7 @@ export function useJalaliCalendar(
         isSelected: selectedDates.some((d) => d.year === year),
         isCurrent: today.year === year,
         isDisabled: Boolean(
-          (minDate && year < minDate.year) || (maxDate && year > maxDate.year)
+          (minDate && year < minDate.year) || (maxDate && year > maxDate.year),
         ),
       };
     });
@@ -427,9 +473,15 @@ export function useJalaliCalendar(
       result = { start: result.start, end: result.start };
       setSelected(result);
     }
-    if (result) commit(result);
+    if (result) {
+      if (selectionMode === 'range' && isRange(result)) {
+        commitRange(result);
+      } else if (!isRange(result)) {
+        commitDate(result);
+      }
+    }
     return result;
-  }, [selected, selectionMode, commit]);
+  }, [selected, selectionMode, commitDate, commitRange]);
 
   const reset = useCallback(() => {
     setSelected(committedValue);

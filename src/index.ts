@@ -14,6 +14,8 @@ export type { JalaliDatePickerProps } from './components/JalaliDatePicker';
 export { useJalaliCalendar } from './react/useJalaliCalendar';
 export type {
   UseJalaliCalendarOptions,
+  UseJalaliCalendarSingleOptions,
+  UseJalaliCalendarRangeOptions,
   UseJalaliCalendarResult,
   EnrichedDayCell,
   MonthOption,
@@ -21,6 +23,7 @@ export type {
   SelectionKind,
   CommitMode,
   JalaliSelection,
+  SelectionForMode,
 } from './react/useJalaliCalendar';
 
 // ----- Output adapters: convert a selection to timestamp / Gregorian / Jalali -----
