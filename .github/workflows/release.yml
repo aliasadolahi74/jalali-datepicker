@@ -1,39 +1,50 @@
 name: Release
 
-# Publishes to npm when you publish a GitHub Release. The release tag (e.g.
-# v0.1.0) is the source of truth for the version that gets published.
+# Runs semantic-release on every push to main. The version is computed from
+# Conventional Commit messages since the last release tag — no manual tagging.
+#   fix:      -> patch    feat:     -> minor    feat!/BREAKING -> major
+# semantic-release tags, generates the changelog, creates the GitHub Release,
+# and publishes to npm. Commits with no releasable change publish nothing.
 on:
-  release:
-    types: [published]
+  push:
+    branches: [main]
 
 permissions:
-  contents: read
-  id-token: write # required for npm provenance
+  contents: write # create tags, releases, and commit the changelog back
+  issues: write # comment on released issues
+  pull-requests: write # comment on released PRs
+  id-token: write # npm provenance
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # semantic-release needs full history to read tags
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
           registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Set version from release tag
-        run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          echo "Publishing version $VERSION"
-          npm version "$VERSION" --no-git-tag-version --allow-same-version
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
 
       - name: Build
         run: npm run build
 
-      - name: Publish to npm
-        run: npm publish --provenance --access public
+      - name: Release
+        run: npx semantic-release
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
