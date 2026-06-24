@@ -84,7 +84,7 @@ export function JalaliDatePicker(props: JalaliDatePickerProps) {
   };
 
   return (
-    <div dir="rtl" className={cn(styles.root, className)}>
+    <div dir="rtl" lang="fa" className={cn(styles.root, className)}>
       <CalendarHeader cal={cal} />
 
       {cal.view === 'day' && (
