@@ -36,7 +36,7 @@ const dateKey = ({ year, month, day }: JalaliDate): string =>
 export function addMonths(
   year: number,
   month: number,
-  delta: number
+  delta: number,
 ): { year: number; month: number } {
   const zeroBased = month - 1 + delta;
   return {
@@ -55,7 +55,7 @@ export function compareJalali(a: JalaliDate, b: JalaliDate): number {
 
 export function isSameDay(
   a: JalaliDate | null | undefined,
-  b: JalaliDate | null | undefined
+  b: JalaliDate | null | undefined,
 ): boolean {
   return (
     !!a && !!b && a.year === b.year && a.month === b.month && a.day === b.day
@@ -66,7 +66,7 @@ export function isSameDay(
 export function clampToRange(
   date: JalaliDate,
   min?: JalaliDate | null,
-  max?: JalaliDate | null
+  max?: JalaliDate | null,
 ): JalaliDate {
   if (min && compareJalali(date, min) < 0) return min;
   if (max && compareJalali(date, max) > 0) return max;

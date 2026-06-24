@@ -22,7 +22,7 @@ export interface TimestampOptions {
 /** Epoch timestamp for local midnight of the given Jalali day. */
 export function toTimestamp(
   date: JalaliDate,
-  options?: TimestampOptions
+  options?: TimestampOptions,
 ): number {
   const ms = jalaliDayjs(date).valueOf();
   return options?.unit === 's' ? Math.floor(ms / 1000) : ms;
@@ -49,7 +49,7 @@ export interface JalaliFormatOptions {
 export function toJalali(
   date: JalaliDate,
   format = 'YYYY/MM/DD',
-  options?: JalaliFormatOptions
+  options?: JalaliFormatOptions,
 ): string {
   const formatted = jalaliDayjs(date).locale('fa').format(format);
   return options?.persianDigits === false
@@ -65,7 +65,7 @@ export function fromDate(date: Date): JalaliDate {
 /** Convert an epoch timestamp to its Jalali parts. */
 export function fromTimestamp(
   value: number,
-  options?: TimestampOptions
+  options?: TimestampOptions,
 ): JalaliDate {
   const ms = options?.unit === 's' ? value * 1000 : value;
   return toJalaliDate(dayjs(ms));

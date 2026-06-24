@@ -11,7 +11,7 @@ import type { DayMeta, HolidayConfig } from './types';
 export function resolveDayMeta(
   date: JalaliDate,
   weekday: number,
-  config: HolidayConfig
+  config: HolidayConfig,
 ): DayMeta {
   const isWeekend = config.weekends.includes(weekday);
 

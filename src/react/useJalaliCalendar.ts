@@ -139,7 +139,7 @@ const selectionKey = (value: JalaliSelection): string =>
   selectionDates(value).map(dateKey).join('|') || 'none';
 
 export function useJalaliCalendar(
-  options: UseJalaliCalendarOptions = {}
+  options: UseJalaliCalendarOptions = {},
 ): UseJalaliCalendarResult {
   const {
     selectionMode = 'single',
@@ -193,12 +193,12 @@ export function useJalaliCalendar(
       if (maxDate && compareJalali(date, maxDate) > 0) return true;
       return disabledDate ? disabledDate(date) : false;
     },
-    [minDate, maxDate, disabledDate]
+    [minDate, maxDate, disabledDate],
   );
 
   const grid = useMemo(
     () => buildMonthGrid(cursor.year, cursor.month),
-    [cursor.year, cursor.month]
+    [cursor.year, cursor.month],
   );
 
   // Normalize the current selection (plus any hover preview) into ordered
@@ -243,7 +243,7 @@ export function useJalaliCalendar(
             isRangeEnd,
             isInRange,
           };
-        })
+        }),
       ),
     [
       grid,
@@ -253,7 +253,7 @@ export function useJalaliCalendar(
       rangeHi,
       isDayDisabled,
       holidays,
-    ]
+    ],
   );
 
   const commit = useCallback(
@@ -261,7 +261,7 @@ export function useJalaliCalendar(
       if (!isControlled) setInternalCommitted(next);
       onChange?.(next);
     },
-    [isControlled, onChange]
+    [isControlled, onChange],
   );
 
   const moveCursorToCell = useCallback(
@@ -270,7 +270,7 @@ export function useJalaliCalendar(
         setCursor({ year: cell.date.year, month: cell.date.month });
       }
     },
-    [cursor.month, cursor.year]
+    [cursor.month, cursor.year],
   );
 
   const selectDay = useCallback(
@@ -298,7 +298,7 @@ export function useJalaliCalendar(
       moveCursorToCell(cell);
       if (mode === 'instant') commit(cell.date);
     },
-    [isDayDisabled, selectionMode, selected, moveCursorToCell, mode, commit]
+    [isDayDisabled, selectionMode, selected, moveCursorToCell, mode, commit],
   );
 
   const hoverDay = useCallback(
@@ -306,7 +306,7 @@ export function useJalaliCalendar(
       if (selectionMode !== 'range') return;
       setHoverDate(date);
     },
-    [selectionMode]
+    [selectionMode],
   );
 
   const selectMonth = useCallback((month: number) => {
@@ -341,7 +341,7 @@ export function useJalaliCalendar(
         return { ...current, year: current.year + direction * YEARS_PER_PAGE };
       });
     },
-    [view]
+    [view],
   );
 
   const goPrev = useCallback(() => step(-1), [step]);
@@ -356,7 +356,7 @@ export function useJalaliCalendar(
           !minDate ||
           compareJalali(
             { ...prev, day: daysInMonth(prev.year, prev.month) },
-            minDate
+            minDate,
           ) >= 0,
         canGoNext: !maxDate || compareJalali({ ...next, day: 1 }, maxDate) <= 0,
       };
@@ -386,7 +386,7 @@ export function useJalaliCalendar(
         month,
         label,
         isSelected: selectedDates.some(
-          (d) => d.year === cursor.year && d.month === month
+          (d) => d.year === cursor.year && d.month === month,
         ),
         isCurrent: today.year === cursor.year && today.month === month,
         isDisabled: Boolean(before || after),
@@ -405,7 +405,7 @@ export function useJalaliCalendar(
         isSelected: selectedDates.some((d) => d.year === year),
         isCurrent: today.year === year,
         isDisabled: Boolean(
-          (minDate && year < minDate.year) || (maxDate && year > maxDate.year)
+          (minDate && year < minDate.year) || (maxDate && year > maxDate.year),
         ),
       };
     });

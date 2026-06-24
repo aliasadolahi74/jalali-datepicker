@@ -32,7 +32,11 @@ you can pin them yourself if you wish.
 
 ```tsx
 import { useState } from 'react';
-import { JalaliDatePicker, toGregorian, type JalaliDate } from '@aliasadollahi/jalali-datepicker';
+import {
+  JalaliDatePicker,
+  toGregorian,
+  type JalaliDate,
+} from '@aliasadollahi/jalali-datepicker';
 import '@aliasadollahi/jalali-datepicker/styles.css'; // import once, anywhere
 
 function Example() {
@@ -55,21 +59,28 @@ function Example() {
 exposes (dayjs never leaks out). Convert a selection at the end:
 
 ```ts
-import { toTimestamp, toGregorian, toJalali } from '@aliasadollahi/jalali-datepicker';
+import {
+  toTimestamp,
+  toGregorian,
+  toJalali,
+} from '@aliasadollahi/jalali-datepicker';
 
-toTimestamp(value);                  // epoch ms (local midnight)
-toGregorian(value, 'YYYY-MM-DD');    // "2025-04-21"
+toTimestamp(value); // epoch ms (local midnight)
+toGregorian(value, 'YYYY-MM-DD'); // "2025-04-21"
 toJalali(value, 'dddd D MMMM YYYY'); // "دوشنبه ۱ اردیبهشت ۱۴۰۴"
 ```
 
 ### Range selection
 
 ```tsx
-import { JalaliDatePicker, type JalaliRange } from '@aliasadollahi/jalali-datepicker';
+import {
+  JalaliDatePicker,
+  type JalaliRange,
+} from '@aliasadollahi/jalali-datepicker';
 
 <JalaliDatePicker
   selectionMode="range"
-  value={range}            // { start, end } | null
+  value={range} // { start, end } | null
   onConfirm={setRange}
 />;
 ```
@@ -85,28 +96,31 @@ const cal = useJalaliCalendar({ value, onChange, mode: 'instant' });
 
 ### Key props
 
-| prop                     | default        | meaning                                              |
-| ------------------------ | -------------- | ---------------------------------------------------- |
-| `value` / `defaultValue` | –              | controlled / uncontrolled selection                  |
-| `onChange`               | –              | fires when a value is committed                      |
-| `onConfirm` / `onCancel` | –              | footer تأیید / لغو                                   |
-| `selectionMode`          | `'single'`     | `'single'` or `'range'`                              |
-| `mode`                   | `'confirm'`    | `'instant'` commits on click; `'confirm'` stages it  |
-| `minDate` / `maxDate`    | –              | inclusive bounds                                     |
-| `disabledDate(date)`     | –              | disable arbitrary days                               |
-| `holidays`               | `IRAN_HOLIDAYS`| weekend + holiday config (see below)                 |
-| `showFooter` / `showToday` | `true`       | footer + امروز shortcut                              |
+| prop                       | default         | meaning                                             |
+| -------------------------- | --------------- | --------------------------------------------------- |
+| `value` / `defaultValue`   | –               | controlled / uncontrolled selection                 |
+| `onChange`                 | –               | fires when a value is committed                     |
+| `onConfirm` / `onCancel`   | –               | footer تأیید / لغو                                  |
+| `selectionMode`            | `'single'`      | `'single'` or `'range'`                             |
+| `mode`                     | `'confirm'`     | `'instant'` commits on click; `'confirm'` stages it |
+| `minDate` / `maxDate`      | –               | inclusive bounds                                    |
+| `disabledDate(date)`       | –               | disable arbitrary days                              |
+| `holidays`                 | `IRAN_HOLIDAYS` | weekend + holiday config (see below)                |
+| `showFooter` / `showToday` | `true`          | footer + امروز shortcut                             |
 
 ## Injecting days off / holidays
 
 ```ts
-import { IRAN_HOLIDAYS, type HolidayConfig } from '@aliasadollahi/jalali-datepicker';
+import {
+  IRAN_HOLIDAYS,
+  type HolidayConfig,
+} from '@aliasadollahi/jalali-datepicker';
 
 const holidays: HolidayConfig = {
   weekends: [6], // Persian weekday index: 0 = Saturday … 6 = Friday
   rules: [
-    { type: 'recurring', month: 1, day: 1, label: 'نوروز' },                 // every year
-    { type: 'specific', year: 1405, month: 1, day: 13, label: 'عید فطر' },   // one-off (lunar)
+    { type: 'recurring', month: 1, day: 1, label: 'نوروز' }, // every year
+    { type: 'specific', year: 1405, month: 1, day: 13, label: 'عید فطر' }, // one-off (lunar)
   ],
 };
 ```

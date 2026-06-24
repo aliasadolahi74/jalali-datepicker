@@ -49,7 +49,7 @@ export function DayCell({
         cell.isOff && styles.dayOff,
         cell.isInRange && !cell.isSelected && styles.dayInRange,
         cell.isToday && styles.dayToday,
-        cell.isSelected && styles.daySelected
+        cell.isSelected && styles.daySelected,
       )}
     >
       {toPersianDigits(cell.date.day)}

@@ -1,0 +1,22 @@
+#!/bin/sh
+# Enforce conventional branch naming. Long-lived branches are exempt; every
+# other branch must look like <type>/<short-description>, e.g. feat/range-mode.
+
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+# Detached HEAD (e.g. rebase) — nothing to check.
+[ "$branch" = "HEAD" ] && exit 0
+
+# Long-lived branches that don't follow the pattern.
+case "$branch" in
+  main | master | develop | dev) exit 0 ;;
+esac
+
+pattern='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|hotfix|release)/[a-z0-9._-]+$'
+
+if ! echo "$branch" | grep -Eq "$pattern"; then
+  echo "✗ Branch \"$branch\" does not follow the convention." >&2
+  echo "  Use <type>/<kebab-description>, e.g. feat/range-mode or fix/dst-offset." >&2
+  echo "  Allowed types: feat fix docs style refactor perf test build ci chore revert hotfix release" >&2
+  exit 1
+fi

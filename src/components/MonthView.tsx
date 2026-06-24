@@ -24,7 +24,7 @@ export function MonthView({ options, onSelect }: MonthViewProps) {
           className={cn(
             styles.option,
             option.isCurrent && styles.optionCurrent,
-            option.isSelected && styles.optionSelected
+            option.isSelected && styles.optionSelected,
           )}
         >
           {option.label}

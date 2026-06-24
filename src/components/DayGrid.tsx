@@ -34,11 +34,11 @@ export function DayGrid({
     const selected = cells.find((cell) => cell.isSelected && !cell.isDisabled);
     if (selected) return selected.key;
     const today = cells.find(
-      (cell) => cell.isToday && !cell.isOutside && !cell.isDisabled
+      (cell) => cell.isToday && !cell.isOutside && !cell.isDisabled,
     );
     if (today) return today.key;
     const firstEnabled = cells.find(
-      (cell) => !cell.isOutside && !cell.isDisabled
+      (cell) => !cell.isOutside && !cell.isDisabled,
     );
     return (firstEnabled ?? cells[0])?.key ?? null;
   }, [cells]);
@@ -97,7 +97,7 @@ export function DayGrid({
             key={label}
             className={cn(
               styles.weekday,
-              index === FRIDAY_INDEX && styles.weekdayOff
+              index === FRIDAY_INDEX && styles.weekdayOff,
             )}
           >
             {label}
