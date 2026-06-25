@@ -16,13 +16,13 @@ const FONT = "'Vazirmatn', sans-serif";
 
 export const themes: Record<ThemeKey, Theme> = {
   light: {
-    label: 'روشن',
+    label: 'Light',
     vars: {
       ['--jdp-font' as string]: FONT,
     },
   },
   gold: {
-    label: 'طلایی',
+    label: 'Gold',
     vars: {
       ['--jdp-font' as string]: FONT,
       ['--jdp-primary' as string]: '#e4ae21',
@@ -35,7 +35,7 @@ export const themes: Record<ThemeKey, Theme> = {
     },
   },
   dark: {
-    label: 'تیره',
+    label: 'Dark',
     vars: {
       ['--jdp-font' as string]: FONT,
       ['--jdp-bg' as string]: '#1c1917',

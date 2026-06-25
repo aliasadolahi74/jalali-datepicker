@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 
 /**
  * Reusable presentational primitives for the showcase. Plain inline styles —
@@ -98,13 +98,50 @@ export function Toggle({
             height: 20,
             borderRadius: '50%',
             background: '#fff',
-            transform: checked ? 'translateX(-18px)' : 'translateX(0)',
+            transform: checked ? 'translateX(18px)' : 'translateX(0)',
             transition: 'transform .15s',
             boxShadow: '0 1px 2px rgba(0,0,0,.2)',
           }}
         />
       </button>
     </label>
+  );
+}
+
+/** Copies `text` to the clipboard and briefly confirms. */
+export function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard unavailable (e.g. non-secure context) — fail silently.
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      aria-label="Copy to clipboard"
+      style={{
+        border: 'none',
+        cursor: 'pointer',
+        background: copied ? 'var(--accent)' : 'rgba(255,255,255,.14)',
+        color: copied ? '#1c1917' : '#fafaf9',
+        borderRadius: 8,
+        padding: '4px 12px',
+        fontSize: 13,
+        fontWeight: 500,
+        transition: 'all .15s',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {copied ? 'Copied!' : 'Copy'}
+    </button>
   );
 }
 

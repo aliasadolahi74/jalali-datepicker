@@ -1,15 +1,16 @@
 <!doctype html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>jalali-datepicker — تقویم شمسی برای React</title>
+    <title>jalali-datepicker — Persian (Jalali) date picker for React</title>
     <meta
       name="description"
-      content="یک تقویم/دیت‌پیکر شمسی (جلالی) راست‌چین برای React — انتخاب تکی و بازه‌ای، تعطیلات قابل‌تزریق، و تم‌پذیری با متغیرهای CSS."
+      content="A self-contained, RTL-first Persian (Jalali) date picker for React — single & range selection, injectable holidays, and theming via CSS variables."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Vazirmatn is used by the picker itself (Persian UI); the page chrome uses the system font. -->
     <link
       href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
@@ -32,10 +33,15 @@
         padding: 0;
       }
       body {
-        font-family: 'Vazirmatn', system-ui, sans-serif;
+        font-family:
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
         background: var(--page);
         color: var(--ink);
-        line-height: 1.7;
+        line-height: 1.6;
         -webkit-font-smoothing: antialiased;
       }
       #root {
@@ -43,8 +49,6 @@
       }
       code {
         font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-        direction: ltr;
-        unicode-bidi: embed;
       }
       a {
         color: inherit;
