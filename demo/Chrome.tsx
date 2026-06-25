@@ -1,4 +1,5 @@
 import { INSTALL_CMD, NPM_URL, REPO_URL } from './links';
+import { CopyButton } from './ui';
 
 /** Top navigation bar. */
 export function Header() {
@@ -38,7 +39,7 @@ export function Header() {
   );
 }
 
-/** Title, tagline, and install command. */
+/** Title, tagline, and install command with a copy button. */
 export function Hero() {
   return (
     <div style={{ textAlign: 'center', padding: '32px 0 40px' }}>
@@ -50,31 +51,35 @@ export function Hero() {
           letterSpacing: '-0.02em',
         }}
       >
-        تقویم شمسی برای React
+        Persian (Jalali) date picker for React
       </h1>
       <p
         style={{
           margin: '0 auto 24px',
-          maxWidth: 560,
+          maxWidth: 580,
           fontSize: 17,
           color: 'var(--muted)',
         }}
       >
-        یک دیت‌پیکر جلالی راست‌چین، خودبسنده و تم‌پذیر — انتخاب تکی و بازه‌ای،
-        تعطیلات قابل‌تزریق، و یک هوک headless برای ساختن رابط دلخواه.
+        A self-contained, RTL-first calendar — single &amp; range selection,
+        injectable holidays, theming via CSS variables, and a headless hook for
+        building your own UI.
       </p>
-      <code
+      <div
         style={{
-          display: 'inline-block',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 12,
           background: 'var(--ink)',
           color: '#fafaf9',
-          padding: '12px 22px',
+          padding: '8px 8px 8px 20px',
           borderRadius: 12,
           fontSize: 14,
         }}
       >
-        {INSTALL_CMD}
-      </code>
+        <code style={{ background: 'transparent' }}>{INSTALL_CMD}</code>
+        <CopyButton text={INSTALL_CMD} />
+      </div>
     </div>
   );
 }
@@ -92,11 +97,11 @@ export function Footer() {
         fontSize: 13.5,
       }}
     >
-      ساخته‌شده با ❤ توسط{' '}
+      Built by{' '}
       <a href={REPO_URL} target="_blank" rel="noreferrer">
         Ali Asadollahi
       </a>{' '}
-      — تحت مجوز MIT
+      — MIT licensed
     </footer>
   );
 }

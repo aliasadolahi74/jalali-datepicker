@@ -2,6 +2,10 @@
   <img src="https://raw.githubusercontent.com/aliasadolahi74/jalali-datepicker/main/media/cover.png" alt="jalali-datepicker — RTL-first Persian date picker for React" width="100%" />
 </p>
 
+<p align="center">
+  <a href="https://aliasadolahi74.github.io/jalali-datepicker/"><strong>🔗 Live demo</strong></a>
+</p>
+
 # jalali-datepicker
 
 A self-contained, **RTL-first Persian (Jalali / Khorshidi) date picker** for React.
