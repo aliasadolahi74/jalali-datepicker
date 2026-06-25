@@ -20,6 +20,39 @@ A self-contained, **RTL-first Persian (Jalali / Khorshidi) date picker** for Rea
 
 The engine is **dayjs + [`jalaliday`](https://www.npmjs.com/package/jalaliday)** (both MIT).
 
+## How it compares
+
+The Persian-React date-picker space is crowded. This library is deliberately
+**narrow and self-contained** — one calendar (Jalali), no UI framework, no global
+state, only `dayjs` + `jalaliday` under the hood — rather than a multi-calendar
+toolkit. That focus is the trade-off to weigh below.
+
+|                                |  **jalali-datepicker**  |      [react-multi-date-picker]       |      [zaman]       | [react-modern-calendar-datepicker] |
+| ------------------------------ | :---------------------: | :----------------------------------: | :----------------: | :--------------------------------: |
+| Persian (Jalali)               |           ✅            |                  ✅                  |         ✅         |                 ✅                 |
+| Single / range                 |         ✅ / ✅         |         ✅ / ✅ (+ multiple)         |      ✅ / ✅       |              ✅ / ✅               |
+| RTL                            |      ✅ always-on       |              via locale              |      via prop      |                 ✅                 |
+| Headless hook                  | ✅ `useJalaliCalendar`  |                  ❌                  |         ❌         |                 ❌                 |
+| Injectable holidays / days-off | ✅ ships an Iran config |                  ❌                  |         ❌         |                 ❌                 |
+| Theming                        |    ✅ CSS variables     |             CSS classes              | `accentColor` prop |         color props / CSS          |
+| No UI-framework dependency     |           ✅            |         needs popper helper          |   styled output    |             CSS bundle             |
+| First-party TypeScript types   |           ✅            |                  ✅                  |         ✅         |        community (`@types`)        |
+| Built-in time picker           |           ❌            |              via plugin              |         ✅         |                 ❌                 |
+| Other calendars                |     ❌ Jalali-only      | ✅ Gregorian/Arabic/Indian + plugins |     Gregorian      |             Gregorian              |
+| Actively maintained            |           ✅            |              ✅ (2024)               |       ~2023        |      ❌ (last release ~2019)       |
+
+**Reach for an alternative when** you need several calendar systems or a plugin
+ecosystem ([react-multi-date-picker]), or a time picker baked into the same
+component ([zaman]). If you want a small, themeable, RTL-first Jalali calendar
+with first-class holiday support and a headless option, this library is the tighter fit.
+
+[react-multi-date-picker]: https://github.com/shahabyazdi/react-multi-date-picker
+[zaman]: https://github.com/rzkhosroshahi/zaman
+[react-modern-calendar-datepicker]: https://github.com/Kiarash-Z/react-modern-calendar-datepicker
+
+> Comparison reflects publicly available information as of June 2026; the other
+> libraries continue to evolve — double-check against their own docs.
+
 ## Install
 
 ```bash
