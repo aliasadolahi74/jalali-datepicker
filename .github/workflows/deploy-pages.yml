@@ -1,0 +1,52 @@
+name: Deploy demo to GitHub Pages
+
+on:
+  # Publish on every push to main…
+  push:
+    branches: [main]
+  # …and allow manual runs from the Actions tab.
+  workflow_dispatch:
+
+# Permissions the GitHub Pages deploy action needs.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let an in-progress deploy finish; queue the latest commit behind it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build demo
+        run: npm run demo:build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-demo
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
