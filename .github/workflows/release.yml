@@ -8,6 +8,10 @@ name: Release
 on:
   push:
     branches: [main]
+  # Manual trigger (Actions tab → Release → Run workflow, or `gh workflow run
+  # release.yml`). semantic-release still only publishes when there are
+  # releasable commits since the last tag.
+  workflow_dispatch:
 
 permissions:
   contents: write # create tags, releases, and commit the changelog back
