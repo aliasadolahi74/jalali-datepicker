@@ -3,23 +3,51 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>jalali-datepicker — demo</title>
+    <title>jalali-datepicker — تقویم شمسی برای React</title>
+    <meta
+      name="description"
+      content="یک تقویم/دیت‌پیکر شمسی (جلالی) راست‌چین برای React — انتخاب تکی و بازه‌ای، تعطیلات قابل‌تزریق، و تم‌پذیری با متغیرهای CSS."
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <style>
+      :root {
+        --ink: #1c1917;
+        --muted: #78716c;
+        --line: #e7e5e4;
+        --panel: #ffffff;
+        --page: #faf9f7;
+        --accent: #e4ae21;
+      }
       * {
         box-sizing: border-box;
       }
+      html,
       body {
         margin: 0;
-        font-family: 'Vazirmatn', sans-serif;
+        padding: 0;
+      }
+      body {
+        font-family: 'Vazirmatn', system-ui, sans-serif;
+        background: var(--page);
+        color: var(--ink);
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
       }
       #root {
         min-height: 100vh;
+      }
+      code {
+        font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+        direction: ltr;
+        unicode-bidi: embed;
+      }
+      a {
+        color: inherit;
       }
     </style>
   </head>
