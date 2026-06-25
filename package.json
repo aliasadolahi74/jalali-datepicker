@@ -1,6 +1,6 @@
 {
   "name": "@aliasadollahi/jalali-datepicker",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A self-contained, RTL-first Persian (Jalali / Khorshidi) date picker for React — single & range selection, injectable holidays, headless hook, themeable via CSS variables, no Tailwind.",
   "type": "module",
   "license": "MIT",
