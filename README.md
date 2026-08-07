@@ -11,6 +11,7 @@
 A self-contained, **RTL-first Persian (Jalali / Khorshidi) date picker** for React.
 
 - 📅 **Single & range** selection
+- 🗓️ **Read-only month grid** (`<JalaliMonthGrid>`) — inert by default, `renderDay` slot
 - 🎯 **Headless hook** (`useJalaliCalendar`) — build your own UI, or use the styled `<JalaliDatePicker />`
 - 🏖️ **Injectable holidays / days-off** — recurring, one-off, and date-**range** rules, with categories (ships a default Iran config)
 - 🔤 **Jalali parsing & day math** — `parseJalali`, `addDays`, `diffDays`, `eachDayOfInterval`
@@ -181,6 +182,63 @@ ones — is folded into the cell's tooltip and accessible name.
 Style them with the `--jdp-badge-*` variables below, per event via `color`, or
 per event via `className` for anything else.
 
+### Read-only month grid
+
+`<JalaliMonthGrid>` is the picker's grid without the chrome — weekday header and
+day cells, nothing else. No navigation, no month/year drill-down, no footer, no
+selection. It's what you want when a month _displays_ data rather than collecting
+a date:
+
+```tsx
+import { JalaliMonthGrid } from '@aliasadollahi/jalali-datepicker';
+
+<JalaliMonthGrid
+  year={1405}
+  month={6} // 1-based
+  weeks="auto" // only the weeks the month touches (Shahrivar 1405 = 5)
+  holidays={holidays}
+  events={events}
+/>;
+```
+
+**It is inert by default.** With no `onDayClick` there is no `role="grid"`, no
+tab stop, and no key handling — nothing for assistive tech to announce as an
+interactive widget. Pass `onDayClick` and each day becomes a real button; it
+still never claims to be a grid widget.
+
+| prop                | default         | meaning                                        |
+| ------------------- | --------------- | ---------------------------------------------- |
+| `year` / `month`    | –               | required; `month` is 1-based                   |
+| `weeks`             | `'fixed'`       | `'fixed'` = always 6 rows; `'auto'` trims      |
+| `holidays`          | `IRAN_HOLIDAYS` | same config the picker takes                   |
+| `events`            | –               | same badges the picker draws                   |
+| `maxBadgesPerDay`   | `3`             | badges per day before truncating               |
+| `tintWeekends`      | `true`          | paint weekends with `--jdp-off-fg`             |
+| `showWeekdayHeader` | `true`          | render the ش…ج row                             |
+| `renderDay`         | –               | `(cell, meta) => ReactNode`, replaces contents |
+| `onDayClick`        | –               | omit for a fully inert calendar                |
+
+`renderDay` receives the `BaseDayCell` and its resolved `DayMeta`, so you can put
+a price, a badge, or anything else in the cell while keeping the grid's tinting
+and layout:
+
+```tsx
+<JalaliMonthGrid
+  year={1405}
+  month={6}
+  renderDay={(cell, meta) => (
+    <span>
+      {toPersianDigits(cell.date.day)}
+      {meta.categories.includes('closure') && <em>✕</em>}
+    </span>
+  )}
+/>
+```
+
+The grid resolves the `--jdp-*` variables itself, so it themes standalone and
+does not have to be nested inside a picker. It ships bare — no card border,
+padding, or shadow — so you can drop it straight into your own container.
+
 ### Key props
 
 | prop                       | default         | meaning                                             |
@@ -217,8 +275,10 @@ import {
   compareJalali, // (a, b) → -1 | 0 | 1
   isSameDay,
   clampToRange, // (date, min?, max?) → JalaliDate
-  buildMonthGrid, // (year, month) → BaseDayCell[][] (always 6×7)
+  buildMonthGrid, // (year, month, { weeks }) → BaseDayCell[][]
   dayKey, // (date) → "1404-1-13" — same string as BaseDayCell.key
+  WEEKDAY, // { SATURDAY: 0 … FRIDAY: 6 }
+  IRAN_WEEKEND, // [6] — drop straight into HolidayConfig.weekends
   groupEventsByDay, // (events) → Map<dayKey, DayEvent[]>
   resolveDayMeta, // (date, weekday, holidays) → DayMeta
 } from '@aliasadollahi/jalali-datepicker';
@@ -230,6 +290,13 @@ exactly the string `BaseDayCell.key` carries, so the two can never drift.
 `eachDayOfInterval` returns `[]` when `end` is before `start` (an empty range,
 not a reversed one), and both bounds are inclusive. All three helpers cross
 month and year boundaries correctly, including Esfand's 29/30 leap-year split.
+
+`buildMonthGrid` returns six weeks by default — a stable height, so a picker does
+not jump when navigating. Pass `{ weeks: 'auto' }` to get only the weeks the
+month actually touches, which is what a static calendar wants.
+
+Weekday indices are `0 = Saturday … 6 = Friday` throughout; use `WEEKDAY` rather
+than writing `const FRIDAY = 6`.
 
 ### Parsing Jalali strings
 
@@ -322,10 +389,14 @@ Override any of these custom properties on an ancestor to retheme — they casca
 ```
 --jdp-bg            --jdp-fg            --jdp-muted-fg       --jdp-disabled-fg
 --jdp-border        --jdp-hover-bg      --jdp-selected-bg    --jdp-selected-fg
---jdp-range-bg      --jdp-off-fg        --jdp-today-ring     --jdp-primary
---jdp-primary-fg    --jdp-focus-ring    --jdp-radius         --jdp-control-radius
---jdp-cell-radius   --jdp-shadow        --jdp-width          --jdp-font
+--jdp-range-bg      --jdp-off-fg        --jdp-today-ring     --jdp-today-bg
+--jdp-primary       --jdp-primary-fg    --jdp-focus-ring     --jdp-radius
+--jdp-control-radius --jdp-cell-radius  --jdp-shadow         --jdp-width
+--jdp-font
 ```
+
+`--jdp-today-bg` is `transparent` by default, so today reads as a ring. Set it to
+fill today instead — the ring stays, and a selected or in-range day still wins.
 
 Event badges have their own set:
 

@@ -4,7 +4,10 @@
  * ancestor and it cascades in below, overriding the fallback. No Tailwind, no
  * host design tokens — the component ships its own look.
  */
-.root {
+/* Both roots resolve the public theming vars, so the standalone month grid is
+   themeable on its own and never depends on being nested inside the picker. */
+.root,
+.gridRoot {
   /* Resolve public theming vars (with fallbacks) into private ones. */
   --_bg: var(--jdp-bg, #ffffff);
   --_fg: var(--jdp-fg, #171717);
@@ -17,6 +20,9 @@
   --_range-bg: var(--jdp-range-bg, #eef2f4);
   --_off-fg: var(--jdp-off-fg, #f55959);
   --_today-ring: var(--jdp-today-ring, #e4ae21);
+  /* Transparent by default so today reads as a ring; set it to fill today
+     instead, which many designs prefer. */
+  --_today-bg: var(--jdp-today-bg, transparent);
   --_primary: var(--jdp-primary, #e4ae21);
   --_primary-fg: var(--jdp-primary-fg, #171717);
   --_ring: var(--jdp-focus-ring, #e4ae21);
@@ -39,23 +45,31 @@
   );
 
   box-sizing: border-box;
-  width: var(--jdp-width, 18rem);
   max-width: 100%;
-  padding: 0.75rem;
-  background: var(--_bg);
   color: var(--_fg);
-  border: 1px solid var(--_border);
-  border-radius: var(--_radius);
-  box-shadow: var(--_shadow);
   font-family: var(--jdp-font, inherit);
   font-size: 0.875rem;
   line-height: 1.25rem;
   user-select: none;
 }
 
+/* Card chrome belongs to the picker only. The standalone grid stays bare so a
+   consumer can drop it into their own card, table cell, or two-up layout. */
+.root {
+  width: var(--jdp-width, 18rem);
+  padding: 0.75rem;
+  background: var(--_bg);
+  border: 1px solid var(--_border);
+  border-radius: var(--_radius);
+  box-shadow: var(--_shadow);
+}
+
 .root *,
 .root *::before,
-.root *::after {
+.root *::after,
+.gridRoot *,
+.gridRoot *::before,
+.gridRoot *::after {
   box-sizing: border-box;
 }
 
@@ -180,6 +194,13 @@
   color: var(--_off-fg);
 }
 
+/* Ordered before .dayInRange/.daySelected so those win the background while the
+   ring survives either way (they do not touch box-shadow). */
+.dayToday {
+  background: var(--_today-bg);
+  box-shadow: inset 0 0 0 1px var(--_today-ring);
+}
+
 /* Range mode: interior days of the selected/previewed span. Squared corners so
    adjacent in-range cells read as one continuous band; endpoints keep the
    rounded `.daySelected` look. */
@@ -190,10 +211,6 @@
 
 .dayInRange:hover {
   background: var(--_range-bg);
-}
-
-.dayToday {
-  box-shadow: inset 0 0 0 1px var(--_today-ring);
 }
 
 .daySelected,
@@ -235,6 +252,23 @@
 
 .daySelected .badge {
   background: var(--_badge-selected-color);
+}
+
+/* ---------------- Standalone month grid ---------------- */
+/* Inert days: rendered as plain <div>s when no onDayClick is supplied, so they
+   must not look or behave like buttons. */
+.dayStatic {
+  cursor: default;
+}
+
+/* Specificity must match `.day:hover:not(:disabled)` (0,3,0) to cancel it —
+   a static cell is never :disabled, so that rule would otherwise apply. */
+.day.dayStatic:hover {
+  background: transparent;
+}
+
+.day.dayStatic.dayToday:hover {
+  background: var(--_today-bg);
 }
 
 /* ---------------- Month / Year quick-pick views ---------------- */
