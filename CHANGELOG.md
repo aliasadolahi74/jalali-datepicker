@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/aliasadolahi74/jalali-datepicker/compare/v1.0.0...v1.0.1) (2026-08-07)
+
+
+### Bug Fixes
+
+* dist does not load in plain Node (ESM and CJS both broken in 1.0.0) ([#11](https://github.com/aliasadolahi74/jalali-datepicker/issues/11)) ([f070aba](https://github.com/aliasadolahi74/jalali-datepicker/commit/f070abaf74505c808680fbf5cf28e0bda03ddbff))
+
 # [1.0.0](https://github.com/aliasadolahi74/jalali-datepicker/compare/v0.1.2...v1.0.0) (2026-08-07)
 
 
