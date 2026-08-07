@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/aliasadolahi74/jalali-datepicker/compare/v1.1.0...v1.2.0) (2026-08-07)
+
+
+### Features
+
+* make grid metrics themeable and compose outside+weekend days ([#14](https://github.com/aliasadolahi74/jalali-datepicker/issues/14)) ([3efedbe](https://github.com/aliasadolahi74/jalali-datepicker/commit/3efedbe99d05fc1ea84c6564b27015ac3c4bd99b)), closes [#f9a4a4](https://github.com/aliasadolahi74/jalali-datepicker/issues/f9a4a4)
+
 # [1.1.0](https://github.com/aliasadolahi74/jalali-datepicker/compare/v1.0.1...v1.1.0) (2026-08-07)
 
 
