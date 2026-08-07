@@ -8,7 +8,10 @@
 
 // ----- Styled component -----
 export { JalaliDatePicker } from './components/JalaliDatePicker';
-export type { JalaliDatePickerProps } from './components/JalaliDatePicker';
+export type {
+  JalaliDatePickerProps,
+  DayClickInfo,
+} from './components/JalaliDatePicker';
 
 // ----- Headless hook (build your own UI on top) -----
 export { useJalaliCalendar } from './react/useJalaliCalendar';
@@ -47,6 +50,7 @@ export {
   isSameDay,
   clampToRange,
   buildMonthGrid,
+  dayKey,
 } from './core/calendar';
 export {
   JALALI_MONTHS,
@@ -70,3 +74,7 @@ export type {
   SpecificHolidayRule,
   DayMeta,
 } from './holidays/types';
+
+// ----- Event badges (per-day markers, independent of the holiday config) -----
+export { groupEventsByDay } from './events/group';
+export type { DayEvent } from './events/types';

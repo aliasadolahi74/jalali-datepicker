@@ -12,6 +12,8 @@ import styles from './JalaliDatePicker.module.css';
 interface DayGridProps {
   weeks: EnrichedDayCell[][];
   weekdayLabels: readonly string[];
+  /** How many event badges each day draws before truncating. */
+  maxBadgesPerDay: number;
   onSelect: (cell: EnrichedDayCell) => void;
   /** Range mode: called with the hovered day (and `null` when the pointer leaves the grid). */
   onHover?: (date: JalaliDate | null) => void;
@@ -20,6 +22,7 @@ interface DayGridProps {
 export function DayGrid({
   weeks,
   weekdayLabels,
+  maxBadgesPerDay,
   onSelect,
   onHover,
 }: DayGridProps) {
@@ -119,6 +122,7 @@ export function DayGrid({
                 key={cell.key}
                 cell={cell}
                 tabIndex={cell.key === active ? 0 : -1}
+                maxBadges={maxBadgesPerDay}
                 onSelect={onSelect}
                 onFocus={setActiveKey}
                 onHover={onHover}

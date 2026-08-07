@@ -20,6 +20,15 @@
   --_primary: var(--jdp-primary, #e4ae21);
   --_primary-fg: var(--jdp-primary-fg, #171717);
   --_ring: var(--jdp-focus-ring, #e4ae21);
+  --_badge-color: var(--jdp-badge-color, var(--_primary));
+  /* On the selected day the badge colour falls back to the selected *text*
+     colour, not to --_badge-color: the latter defaults to --_primary, which is
+     also the selected fill in most themes, so the dot would vanish. A per-event
+     `color` still wins over this. */
+  --_badge-selected-color: var(--jdp-badge-selected-color, var(--_selected-fg));
+  --_badge-size: var(--jdp-badge-size, 4px);
+  --_badge-gap: var(--jdp-badge-gap, 2px);
+  --_badge-offset: var(--jdp-badge-offset, 4px);
   --_radius: var(--jdp-radius, 14px);
   --_radius-control: var(--jdp-control-radius, 10px);
   --_radius-cell: var(--jdp-cell-radius, 10px);
@@ -142,6 +151,7 @@
 }
 
 .day {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -197,6 +207,34 @@
   color: var(--_disabled);
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+/* Event badges. Absolutely positioned so the day number stays centered and a
+   day with events occupies exactly the same box as one without. */
+.dayNumber {
+  line-height: 1;
+}
+
+.badges {
+  position: absolute;
+  bottom: var(--_badge-offset);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: var(--_badge-gap);
+  pointer-events: none;
+}
+
+.badge {
+  width: var(--_badge-size);
+  height: var(--_badge-size);
+  flex: none;
+  border-radius: 999px;
+  background: var(--_badge-color);
+}
+
+.daySelected .badge {
+  background: var(--_badge-selected-color);
 }
 
 /* ---------------- Month / Year quick-pick views ---------------- */

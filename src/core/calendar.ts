@@ -29,8 +29,14 @@ export function persianWeekday(date: JalaliDate): number {
   return jsDayToPersian(jalaliDayjs(date).day());
 }
 
-const dateKey = ({ year, month, day }: JalaliDate): string =>
-  `${year}-${month}-${day}`;
+/**
+ * Stable identity for a day, matching `BaseDayCell.key`. Exported so consumers
+ * can index their own per-day data by the same key the grid uses, instead of
+ * re-deriving the format and hoping it stays in sync.
+ */
+export function dayKey({ year, month, day }: JalaliDate): string {
+  return `${year}-${month}-${day}`;
+}
 
 /** Add `delta` months to a `{ year, month }` pair, normalizing across year boundaries. */
 export function addMonths(
@@ -105,7 +111,7 @@ export function buildMonthGrid(year: number, month: number): BaseDayCell[][] {
   for (let i = 0; i < slots.length; i += DAYS_IN_WEEK) {
     const week = slots.slice(i, i + DAYS_IN_WEEK).map((slot, column) => ({
       date: slot.date,
-      key: dateKey(slot.date),
+      key: dayKey(slot.date),
       weekday: (i + column) % DAYS_IN_WEEK,
       isOutside: slot.isOutside,
       isToday: isSameDay(slot.date, today),

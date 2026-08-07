@@ -10,6 +10,8 @@ import styles from './JalaliDatePicker.module.css';
 interface DayCellProps {
   cell: EnrichedDayCell;
   tabIndex: number;
+  /** How many badges to draw before truncating. */
+  maxBadges: number;
   onSelect: (cell: EnrichedDayCell) => void;
   onFocus: (key: string) => void;
   onHover?: (date: JalaliDate) => void;
@@ -18,16 +20,26 @@ interface DayCellProps {
 export function DayCell({
   cell,
   tabIndex,
+  maxBadges,
   onSelect,
   onFocus,
   onHover,
 }: DayCellProps) {
+  // Every event's label, even those whose badge is truncated away — the badges
+  // are decorative, so this text is the only channel that carries the detail.
+  const eventLabels = cell.events
+    .map((event) => event.label)
+    .filter((label): label is string => Boolean(label));
+
   // Built from constants (no per-cell date conversion) to keep 42 cells cheap.
   const label = [
     PERSIAN_WEEKDAYS_LONG[cell.weekday],
     `${toPersianDigits(cell.date.day)} ${JALALI_MONTHS[cell.date.month - 1]} ${toPersianDigits(cell.date.year)}`,
     ...cell.holidayLabels,
+    ...eventLabels,
   ].join('، ');
+
+  const tooltip = [...cell.holidayLabels, ...eventLabels].join('، ');
 
   return (
     <button
@@ -39,7 +51,7 @@ export function DayCell({
       aria-selected={cell.isSelected}
       aria-current={cell.isToday ? 'date' : undefined}
       aria-label={label}
-      title={cell.holidayLabels.join('، ') || undefined}
+      title={tooltip || undefined}
       onClick={() => onSelect(cell)}
       onFocus={() => onFocus(cell.key)}
       onMouseEnter={onHover ? () => onHover(cell.date) : undefined}
@@ -52,7 +64,18 @@ export function DayCell({
         cell.isSelected && styles.daySelected,
       )}
     >
-      {toPersianDigits(cell.date.day)}
+      <span className={styles.dayNumber}>{toPersianDigits(cell.date.day)}</span>
+      {cell.events.length > 0 && maxBadges > 0 && (
+        <span className={styles.badges} aria-hidden="true">
+          {cell.events.slice(0, maxBadges).map((event, index) => (
+            <span
+              key={event.id ?? index}
+              className={cn(styles.badge, event.className)}
+              style={event.color ? { background: event.color } : undefined}
+            />
+          ))}
+        </span>
+      )}
     </button>
   );
 }

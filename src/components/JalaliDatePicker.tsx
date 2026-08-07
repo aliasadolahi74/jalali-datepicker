@@ -1,9 +1,10 @@
 'use client';
 
 import type { JalaliDate, JalaliRange } from '../core/types';
-import type { CommitMode } from '../react/useJalaliCalendar';
+import type { CommitMode, EnrichedDayCell } from '../react/useJalaliCalendar';
 import { useJalaliCalendar } from '../react/useJalaliCalendar';
 import type { HolidayConfig } from '../holidays/types';
+import type { DayEvent } from '../events/types';
 import { cn } from '../utils/cn';
 import { CalendarFooter } from './CalendarFooter';
 import { CalendarHeader } from './CalendarHeader';
@@ -11,6 +12,26 @@ import { DayGrid } from './DayGrid';
 import { MonthView } from './MonthView';
 import { YearView } from './YearView';
 import styles from './JalaliDatePicker.module.css';
+
+/**
+ * Everything known about the day that was clicked, at click time. Selection
+ * state is deliberately absent — it is mid-update when this fires, and the
+ * committed value arrives through `onChange` / `onConfirm` instead.
+ */
+export interface DayClickInfo {
+  date: JalaliDate;
+  /** Events falling on this day (empty when there are none). */
+  events: DayEvent[];
+  /** Labels of every holiday rule that matched this day. */
+  holidayLabels: string[];
+  isWeekend: boolean;
+  isHoliday: boolean;
+  /** Weekend or holiday. */
+  isOff: boolean;
+  isToday: boolean;
+  /** The day belongs to the previous/next month (a leading/trailing grid cell). */
+  isOutside: boolean;
+}
 
 interface CommonProps {
   className?: string;
@@ -24,6 +45,21 @@ interface CommonProps {
   maxDate?: JalaliDate | null;
   disabledDate?: (date: JalaliDate) => boolean;
   holidays?: HolidayConfig;
+  /**
+   * Days to mark with badges. Each event on a day draws one circle beneath the
+   * day number; style them with the `--jdp-badge-*` variables, or per-event via
+   * `color` / `className`. Hoist or memoize the array.
+   */
+  events?: readonly DayEvent[];
+  /** Badges drawn per day before truncating (labels still reach the tooltip). Default `3`. */
+  maxBadgesPerDay?: number;
+  /**
+   * Fired on every day click, before/independent of selection, with that day's
+   * events and holiday labels attached — so a consumer can open an event detail
+   * panel, fetch, or log without tracking its own day→data map. Never fires for
+   * disabled days. Does not affect selection; return value is ignored.
+   */
+  onDayClick?: (info: DayClickInfo) => void;
   /** `'instant'` commits on click; `'confirm'` (default) stages until تأیید. */
   mode?: CommitMode;
 }
@@ -53,7 +89,12 @@ export type JalaliDatePickerProps = SingleModeProps | RangeModeProps;
  * calendar itself takes no opinion on how it is presented.
  */
 export function JalaliDatePicker(props: JalaliDatePickerProps) {
-  const { className, showFooter = true, showToday = true } = props;
+  const {
+    className,
+    showFooter = true,
+    showToday = true,
+    maxBadgesPerDay = 3,
+  } = props;
 
   const cal = useJalaliCalendar({
     selectionMode: props.selectionMode,
@@ -66,8 +107,23 @@ export function JalaliDatePicker(props: JalaliDatePickerProps) {
     maxDate: props.maxDate,
     disabledDate: props.disabledDate,
     holidays: props.holidays,
+    events: props.events,
     mode: props.mode,
   });
+
+  const handleDaySelect = (cell: EnrichedDayCell) => {
+    cal.selectDay(cell);
+    props.onDayClick?.({
+      date: cell.date,
+      events: cell.events,
+      holidayLabels: cell.holidayLabels,
+      isWeekend: cell.isWeekend,
+      isHoliday: cell.isHoliday,
+      isOff: cell.isOff,
+      isToday: cell.isToday,
+      isOutside: cell.isOutside,
+    });
+  };
 
   const handleConfirm = () => {
     const result = cal.confirm();
@@ -91,7 +147,8 @@ export function JalaliDatePicker(props: JalaliDatePickerProps) {
         <DayGrid
           weeks={cal.weeks}
           weekdayLabels={cal.weekdayLabels}
-          onSelect={cal.selectDay}
+          maxBadgesPerDay={maxBadgesPerDay}
+          onSelect={handleDaySelect}
           onHover={cal.selectionMode === 'range' ? cal.hoverDay : undefined}
         />
       )}

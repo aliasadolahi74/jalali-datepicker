@@ -13,6 +13,7 @@ import {
   addMonths,
   buildMonthGrid,
   compareJalali,
+  dayKey,
   daysInMonth,
   isSameDay,
   todayJalali,
@@ -28,6 +29,10 @@ import { toPersianDigits } from '../format/digits';
 import { resolveDayMeta } from '../holidays/resolve';
 import type { HolidayConfig } from '../holidays/types';
 import { IRAN_HOLIDAYS } from '../holidays/iran.holidays';
+import { groupEventsByDay } from '../events/group';
+import type { DayEvent } from '../events/types';
+
+const NO_EVENTS: DayEvent[] = [];
 
 const YEARS_PER_PAGE = 12;
 
@@ -55,6 +60,12 @@ export interface UseJalaliCalendarOptions {
   disabledDate?: (date: JalaliDate) => boolean;
   /** Weekend + holiday configuration (defaults to {@link IRAN_HOLIDAYS}). */
   holidays?: HolidayConfig;
+  /**
+   * Events to mark on the grid. Each event a day holds becomes one badge under
+   * that day's number. Hoist or memoize the array — a new identity on every
+   * render re-enriches all 42 cells.
+   */
+  events?: readonly DayEvent[];
   /** `'instant'` commits on click; `'confirm'` stages a draft until `confirm()`. Default `'confirm'`. */
   mode?: CommitMode;
 }
@@ -66,6 +77,8 @@ export interface EnrichedDayCell extends BaseDayCell {
   isHoliday: boolean;
   isOff: boolean;
   holidayLabels: string[];
+  /** Every event falling on this day, in the order they were passed. */
+  events: DayEvent[];
   /** Range mode: this day is the (lower) start endpoint. */
   isRangeStart: boolean;
   /** Range mode: this day is the (upper) end endpoint. */
@@ -132,11 +145,8 @@ const selectionDates = (value: JalaliSelection): JalaliDate[] => {
   return [value];
 };
 
-const dateKey = (date: JalaliDate): string =>
-  `${date.year}-${date.month}-${date.day}`;
-
 const selectionKey = (value: JalaliSelection): string =>
-  selectionDates(value).map(dateKey).join('|') || 'none';
+  selectionDates(value).map(dayKey).join('|') || 'none';
 
 export function useJalaliCalendar(
   options: UseJalaliCalendarOptions = {},
@@ -150,6 +160,7 @@ export function useJalaliCalendar(
     maxDate = null,
     disabledDate,
     holidays = IRAN_HOLIDAYS,
+    events,
     mode = 'confirm',
   } = options;
 
@@ -216,6 +227,12 @@ export function useJalaliCalendar(
   const singleSelected =
     selectionMode === 'single' && !isRange(selected) ? selected : null;
 
+  // Indexed once per `events` identity, not once per cell.
+  const eventsByDay = useMemo(
+    () => (events?.length ? groupEventsByDay(events) : null),
+    [events],
+  );
+
   const weeks = useMemo<EnrichedDayCell[][]>(
     () =>
       grid.map((week) =>
@@ -239,6 +256,7 @@ export function useJalaliCalendar(
             isHoliday: meta.isHoliday,
             isOff: meta.isOff,
             holidayLabels: meta.labels,
+            events: eventsByDay?.get(cell.key) ?? NO_EVENTS,
             isRangeStart,
             isRangeEnd,
             isInRange,
@@ -253,6 +271,7 @@ export function useJalaliCalendar(
       rangeHi,
       isDayDisabled,
       holidays,
+      eventsByDay,
     ],
   );
 
