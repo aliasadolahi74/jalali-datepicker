@@ -19,6 +19,13 @@
   --_selected-fg: var(--jdp-selected-fg, #171717);
   --_range-bg: var(--jdp-range-bg, #eef2f4);
   --_off-fg: var(--jdp-off-fg, #f55959);
+  /* An out-of-month weekend is *both* states at once, so it should read as a
+     muted version of the off colour rather than either one outright. Mixed
+     toward the background so it stays muted on light and dark themes alike. */
+  --_outside-off-fg: var(
+    --jdp-outside-off-fg,
+    color-mix(in srgb, var(--_off-fg) 55%, var(--_bg))
+  );
   --_today-ring: var(--jdp-today-ring, #e4ae21);
   /* Transparent by default so today reads as a ring; set it to fill today
      instead, which many designs prefer. */
@@ -35,6 +42,14 @@
   --_badge-size: var(--jdp-badge-size, 4px);
   --_badge-gap: var(--jdp-badge-gap, 2px);
   --_badge-offset: var(--jdp-badge-offset, 4px);
+  /* Metrics. The colour vars alone cannot satisfy a design that specifies cell
+     size or type scale, and the cell size is a consequence of the gap: at a
+     280px container, `gap: 2px` yields 38.3px cells and `gap: 0` yields exactly
+     40px. All default to the shipped values, so nothing moves unless set. */
+  --_grid-gap: var(--jdp-grid-gap, 2px);
+  --_day-font-size: var(--jdp-day-font-size, inherit);
+  --_weekday-height: var(--jdp-weekday-height, 2rem);
+  --_weekday-font-size: var(--jdp-weekday-font-size, 0.75rem);
   --_radius: var(--jdp-radius, 14px);
   --_radius-control: var(--jdp-control-radius, 10px);
   --_radius-cell: var(--jdp-cell-radius, 10px);
@@ -144,8 +159,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 2rem;
-  font-size: 0.75rem;
+  height: var(--_weekday-height);
+  font-size: var(--_weekday-font-size);
   color: var(--_muted);
 }
 
@@ -154,7 +169,7 @@
 }
 
 .grid {
-  gap: 2px;
+  gap: var(--_grid-gap);
   margin-top: 0.25rem;
 }
 
@@ -173,6 +188,9 @@
   width: 100%;
   padding: 0;
   font: inherit;
+  /* After `font: inherit`, which resets font-size. Defaults to `inherit`, so
+     with no var set this is exactly what `font: inherit` already produced. */
+  font-size: var(--_day-font-size);
   font-variant-numeric: tabular-nums;
   color: var(--_fg);
   background: transparent;
@@ -192,6 +210,15 @@
 
 .dayOff {
   color: var(--_off-fg);
+}
+
+/* A day that is both out-of-month and a weekend. Without this it took the full
+   off colour — .dayOff is declared later than .dayOutside and both are single
+   classes — so an out-of-month Friday looked exactly as prominent as an
+   in-month one, losing the out-of-month reading entirely. The two states
+   compose here instead of one winning outright. */
+.dayOutside.dayOff {
+  color: var(--_outside-off-fg);
 }
 
 /* Ordered before .dayInRange/.daySelected so those win the background while the
