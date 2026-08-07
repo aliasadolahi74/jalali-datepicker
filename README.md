@@ -389,14 +389,49 @@ Override any of these custom properties on an ancestor to retheme — they casca
 ```
 --jdp-bg            --jdp-fg            --jdp-muted-fg       --jdp-disabled-fg
 --jdp-border        --jdp-hover-bg      --jdp-selected-bg    --jdp-selected-fg
---jdp-range-bg      --jdp-off-fg        --jdp-today-ring     --jdp-today-bg
---jdp-primary       --jdp-primary-fg    --jdp-focus-ring     --jdp-radius
---jdp-control-radius --jdp-cell-radius  --jdp-shadow         --jdp-width
---jdp-font
+--jdp-range-bg      --jdp-off-fg        --jdp-outside-off-fg --jdp-today-ring
+--jdp-today-bg      --jdp-primary       --jdp-primary-fg     --jdp-focus-ring
+--jdp-radius        --jdp-control-radius --jdp-cell-radius   --jdp-shadow
+--jdp-width         --jdp-font
 ```
 
 `--jdp-today-bg` is `transparent` by default, so today reads as a ring. Set it to
 fill today instead — the ring stays, and a selected or in-range day still wins.
+
+`--jdp-outside-off-fg` colours a day that is **both** out-of-month and a weekend.
+It defaults to a muted mix of `--jdp-off-fg` toward the background, so an
+out-of-month Friday reads as lighter than an in-month one instead of taking the
+full off colour.
+
+### Metrics
+
+Colours alone cannot satisfy a design that specifies cell size or type scale, so
+the sizing is themeable too. All default to the shipped values, so nothing moves
+unless you set them:
+
+```
+--jdp-grid-gap          /* 2px      → gap between day cells       */
+--jdp-day-font-size     /* inherit  → the day number              */
+--jdp-weekday-height    /* 2rem     → weekday header row height   */
+--jdp-weekday-font-size /* 0.75rem  → weekday header label        */
+```
+
+Cell size is a **consequence of the gap**, not a variable of its own: the grid is
+`repeat(7, 1fr)` with a 1:1 aspect ratio, so the cell is whatever the container
+leaves. At a 280px container the default `gap: 2px` gives `(280 − 6×2) / 7 =
+38.3px` cells; `--jdp-grid-gap: 0` gives exactly 40px. Set the gap to hit a cell
+size rather than widening the container, which would overflow whatever card the
+grid sits in.
+
+```css
+/* a 40×40 grid with 16px numerals in a 280px container */
+.market-calendar {
+  --jdp-grid-gap: 0;
+  --jdp-day-font-size: 16px;
+  --jdp-weekday-height: 40px;
+  --jdp-weekday-font-size: 14px;
+}
+```
 
 Event badges have their own set:
 

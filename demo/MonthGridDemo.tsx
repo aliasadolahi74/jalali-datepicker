@@ -53,6 +53,7 @@ export function MonthGridDemo() {
   const [tintWeekends, setTintWeekends] = useState(true);
   const [interactive, setInteractive] = useState(false);
   const [fillToday, setFillToday] = useState(false);
+  const [denseMetrics, setDenseMetrics] = useState(false);
   const [clicked, setClicked] = useState<DayClickInfo | null>(null);
 
   return (
@@ -105,6 +106,11 @@ export function MonthGridDemo() {
             checked={fillToday}
             onChange={setFillToday}
           />
+          <Toggle
+            label="40px metrics"
+            checked={denseMetrics}
+            onChange={setDenseMetrics}
+          />
           <p style={{ margin: 0, fontSize: 12.5, color: 'var(--muted)' }}>
             {clicked
               ? `${toJalali(clicked.date, 'D MMMM YYYY')}${
@@ -120,13 +126,24 @@ export function MonthGridDemo() {
 
         <div
           style={{
-            width: 300,
+            // Content box must be exactly 280px for the metrics preset to land
+            // on 40px cells: 280 + 2×16 padding + 2×1 border (box-sizing is
+            // border-box on this page).
+            width: 314,
             padding: 16,
             borderRadius: 16,
             border: '1px solid var(--line)',
             background: '#fff',
             ...(fillToday
               ? ({ '--jdp-today-bg': '#fdf3d6' } as React.CSSProperties)
+              : {}),
+            ...(denseMetrics
+              ? ({
+                  '--jdp-grid-gap': '0',
+                  '--jdp-day-font-size': '16px',
+                  '--jdp-weekday-height': '40px',
+                  '--jdp-weekday-font-size': '14px',
+                } as React.CSSProperties)
               : {}),
           }}
         >
