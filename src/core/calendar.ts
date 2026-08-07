@@ -29,8 +29,14 @@ export function persianWeekday(date: JalaliDate): number {
   return jsDayToPersian(jalaliDayjs(date).day());
 }
 
-const dateKey = ({ year, month, day }: JalaliDate): string =>
-  `${year}-${month}-${day}`;
+/**
+ * Stable identity for a day, matching `BaseDayCell.key`. Exported so consumers
+ * can index their own per-day data by the same key the grid uses, instead of
+ * re-deriving the format and hoping it stays in sync.
+ */
+export function dayKey({ year, month, day }: JalaliDate): string {
+  return `${year}-${month}-${day}`;
+}
 
 /** Add `delta` months to a `{ year, month }` pair, normalizing across year boundaries. */
 export function addMonths(
@@ -43,6 +49,42 @@ export function addMonths(
     year: year + Math.floor(zeroBased / 12),
     month: (((zeroBased % 12) + 12) % 12) + 1,
   };
+}
+
+const DAY_MS = 86_400_000;
+
+/**
+ * Add `delta` days (negative to subtract), crossing month and year boundaries
+ * correctly — including Esfand's 29/30 split in leap years.
+ */
+export function addDays(date: JalaliDate, delta: number): JalaliDate {
+  return toJalaliDate(jalaliDayjs(date).add(delta, 'day'));
+}
+
+/**
+ * Whole days from `a` to `b` (`b - a`): positive when `b` is later, negative
+ * when earlier, 0 for the same day. Rounded, so a DST shift between the two
+ * dates cannot leak a fractional day.
+ */
+export function diffDays(a: JalaliDate, b: JalaliDate): number {
+  return Math.round(
+    (jalaliDayjs(b).valueOf() - jalaliDayjs(a).valueOf()) / DAY_MS,
+  );
+}
+
+/**
+ * Every day from `start` to `end`, both inclusive and in ascending order.
+ * Returns `[]` when `end` is before `start` — the range is empty, not reversed.
+ */
+export function eachDayOfInterval(
+  start: JalaliDate,
+  end: JalaliDate,
+): JalaliDate[] {
+  const span = diffDays(start, end);
+  if (span < 0) return [];
+  const days: JalaliDate[] = new Array(span + 1);
+  for (let i = 0; i <= span; i++) days[i] = addDays(start, i);
+  return days;
 }
 
 /** Returns -1 when a < b, 0 when equal, 1 when a > b. */
@@ -105,7 +147,7 @@ export function buildMonthGrid(year: number, month: number): BaseDayCell[][] {
   for (let i = 0; i < slots.length; i += DAYS_IN_WEEK) {
     const week = slots.slice(i, i + DAYS_IN_WEEK).map((slot, column) => ({
       date: slot.date,
-      key: dateKey(slot.date),
+      key: dayKey(slot.date),
       weekday: (i + column) % DAYS_IN_WEEK,
       isOutside: slot.isOutside,
       isToday: isSameDay(slot.date, today),

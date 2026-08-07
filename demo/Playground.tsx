@@ -5,6 +5,8 @@ import {
   toJalali,
   toGregorian,
   toTimestamp,
+  type DayClickInfo,
+  type DayEvent,
   type HolidayConfig,
   type JalaliDate,
   type JalaliRange,
@@ -15,6 +17,7 @@ import { Field, OutputRow, Panel, SegmentedControl, Toggle } from './ui';
 type SelectionMode = 'single' | 'range';
 type CommitMode = 'confirm' | 'instant';
 type HolidaySource = 'iran' | 'none' | 'custom';
+type EventSource = 'sample' | 'none' | 'custom';
 
 /** No weekends and no holidays — what we pass to truly disable them. */
 const NO_HOLIDAYS: HolidayConfig = { weekends: [], rules: [] };
@@ -27,11 +30,88 @@ const SAMPLE_JSON = JSON.stringify(
       { type: 'recurring', month: 1, day: 1, label: 'Nowruz' },
       { type: 'recurring', month: 1, day: 13, label: 'Nature Day' },
       { type: 'specific', year: 1404, month: 7, day: 1, label: 'Team offsite' },
+      {
+        type: 'range',
+        start: { year: 1404, month: 1, day: 20 },
+        end: { year: 1404, month: 1, day: 23 },
+        label: 'Market closure',
+        category: 'closure',
+      },
     ],
   },
   null,
   2,
 );
+
+/**
+ * Sample events for Farvardin 1404 — one plain day, one that is also the
+ * selected day, one with three colours, and one with more events than
+ * `maxBadgesPerDay` to show truncation. Hoisted so its identity is stable.
+ */
+const SAMPLE_EVENTS: DayEvent[] = [
+  { id: 'standup', date: { year: 1404, month: 1, day: 5 }, label: 'Standup' },
+  { id: 'nature', date: { year: 1404, month: 1, day: 13 }, label: 'Picnic' },
+  {
+    id: 'release',
+    date: { year: 1404, month: 1, day: 18 },
+    label: 'Release',
+    color: '#16a34a',
+  },
+  {
+    id: 'review',
+    date: { year: 1404, month: 1, day: 18 },
+    label: 'Design review',
+    color: '#2563eb',
+  },
+  {
+    id: 'retro',
+    date: { year: 1404, month: 1, day: 18 },
+    label: 'Retro',
+    color: '#dc2626',
+  },
+  { id: 'a', date: { year: 1404, month: 1, day: 24 }, label: 'Interview' },
+  { id: 'b', date: { year: 1404, month: 1, day: 24 }, label: 'Board meeting' },
+  { id: 'c', date: { year: 1404, month: 1, day: 24 }, label: 'Demo day' },
+  { id: 'd', date: { year: 1404, month: 1, day: 24 }, label: 'Payroll' },
+  { id: 'e', date: { year: 1404, month: 1, day: 24 }, label: 'Postmortem' },
+];
+
+/** No events at all. */
+const NO_EVENTS: DayEvent[] = [];
+
+/** Starting point for the custom-events editor. */
+const SAMPLE_EVENTS_JSON = JSON.stringify(SAMPLE_EVENTS.slice(0, 5), null, 2);
+
+/** Parse the editor text into a DayEvent[], returning a friendly error instead of throwing. */
+function parseEvents(text: string): {
+  events: DayEvent[] | null;
+  error: string | null;
+} {
+  let value: unknown;
+  try {
+    value = JSON.parse(text);
+  } catch (e) {
+    return { events: null, error: (e as Error).message };
+  }
+  if (!Array.isArray(value)) {
+    return { events: null, error: 'Expected an array of events.' };
+  }
+  const bad = value.findIndex(
+    (event) =>
+      typeof event !== 'object' ||
+      event === null ||
+      typeof (event as DayEvent).date?.year !== 'number' ||
+      typeof (event as DayEvent).date?.month !== 'number' ||
+      typeof (event as DayEvent).date?.day !== 'number',
+  );
+  if (bad >= 0) {
+    return {
+      events: null,
+      error: `Event ${bad + 1} needs a "date" of { year, month, day }.`,
+    };
+  }
+  return { events: value as DayEvent[], error: null };
+}
 
 /** Parse the editor text into a HolidayConfig, returning a friendly error instead of throwing. */
 function parseHolidays(text: string): {
@@ -93,6 +173,11 @@ export function Playground() {
   const [showFooter, setShowFooter] = useState(true);
   const [holidaySource, setHolidaySource] = useState<HolidaySource>('iran');
   const [customJson, setCustomJson] = useState(SAMPLE_JSON);
+  const [tintWeekends, setTintWeekends] = useState(true);
+  const [eventSource, setEventSource] = useState<EventSource>('sample');
+  const [eventsJson, setEventsJson] = useState(SAMPLE_EVENTS_JSON);
+  const [maxBadges, setMaxBadges] = useState(3);
+  const [lastClick, setLastClick] = useState<DayClickInfo | null>(null);
 
   const [single, setSingle] = useState<JalaliDate | null>({
     year: 1404,
@@ -110,6 +195,7 @@ export function Playground() {
   const pickerKey = `${selectionMode}-${mode}-${showFooter}`;
 
   const parsed = useMemo(() => parseHolidays(customJson), [customJson]);
+  const parsedEvents = useMemo(() => parseEvents(eventsJson), [eventsJson]);
 
   const holidays =
     holidaySource === 'none'
@@ -117,6 +203,13 @@ export function Playground() {
       : holidaySource === 'iran'
         ? IRAN_HOLIDAYS
         : (parsed.config ?? NO_HOLIDAYS);
+
+  const events =
+    eventSource === 'none'
+      ? NO_EVENTS
+      : eventSource === 'sample'
+        ? SAMPLE_EVENTS
+        : (parsedEvents.events ?? NO_EVENTS);
 
   const output = useMemo(
     () => describe(selectionMode, single, range),
@@ -179,6 +272,35 @@ export function Playground() {
               checked={showFooter}
               onChange={setShowFooter}
             />
+            <Toggle
+              label="Tint weekends"
+              checked={tintWeekends}
+              onChange={setTintWeekends}
+            />
+            <Field label="Event badges">
+              <SegmentedControl
+                value={eventSource}
+                onChange={setEventSource}
+                options={[
+                  { value: 'sample', label: 'Sample' },
+                  { value: 'none', label: 'None' },
+                  { value: 'custom', label: 'Custom' },
+                ]}
+              />
+            </Field>
+            {eventSource !== 'none' && (
+              <Field label={`Max badges per day — ${maxBadges}`}>
+                <input
+                  type="range"
+                  min={1}
+                  max={5}
+                  step={1}
+                  value={maxBadges}
+                  onChange={(e) => setMaxBadges(Number(e.target.value))}
+                  style={{ width: '100%', accentColor: 'var(--accent)' }}
+                />
+              </Field>
+            )}
           </div>
         </Panel>
 
@@ -199,6 +321,10 @@ export function Playground() {
               mode={mode}
               showFooter={showFooter}
               holidays={holidays}
+              tintWeekends={tintWeekends}
+              events={events}
+              maxBadgesPerDay={maxBadges}
+              onDayClick={setLastClick}
               defaultValue={single}
               onChange={setSingle}
               onConfirm={(v) => v && setSingle(v)}
@@ -210,6 +336,10 @@ export function Playground() {
               mode={mode}
               showFooter={showFooter}
               holidays={holidays}
+              tintWeekends={tintWeekends}
+              events={events}
+              maxBadgesPerDay={maxBadges}
+              onDayClick={setLastClick}
               defaultValue={range}
               onChange={setRange}
               onConfirm={(v) => v && setRange(v)}
@@ -244,6 +374,49 @@ export function Playground() {
             The same value is available via <code>toJalali</code>,{' '}
             <code>toGregorian</code> and <code>toTimestamp</code>.
           </p>
+
+          <div
+            style={{
+              marginTop: 18,
+              paddingTop: 14,
+              borderTop: '1px solid var(--line)',
+            }}
+          >
+            <p
+              style={{
+                margin: '0 0 8px',
+                fontSize: 12.5,
+                color: 'var(--muted)',
+              }}
+            >
+              <code>onDayClick</code> — last clicked day
+            </p>
+            {lastClick ? (
+              <div>
+                <OutputRow
+                  label="Day"
+                  value={toJalali(lastClick.date, 'D MMMM YYYY')}
+                />
+                <OutputRow
+                  label="Events"
+                  value={lastClick.events.map((e) => e.label).join('، ') || '—'}
+                />
+                <OutputRow
+                  label="Holidays"
+                  value={lastClick.holidayLabels.join('، ') || '—'}
+                />
+                <OutputRow
+                  label="Categories"
+                  value={lastClick.holidayCategories.join(', ') || '—'}
+                />
+                <OutputRow label="Off" value={lastClick.isOff ? 'yes' : 'no'} />
+              </div>
+            ) : (
+              <p style={{ margin: 0, fontSize: 14, color: 'var(--muted)' }}>
+                Click any day.
+              </p>
+            )}
+          </div>
         </Panel>
       </div>
 
@@ -290,6 +463,57 @@ export function Playground() {
             }}
           >
             {parsed.error ? `⚠ ${parsed.error}` : '✓ Valid — applied above.'}
+          </p>
+        </Panel>
+      )}
+
+      {eventSource === 'custom' && (
+        <Panel title="Custom events (JSON)">
+          <p
+            style={{
+              margin: '0 0 12px',
+              fontSize: 13,
+              color: 'var(--muted)',
+              lineHeight: 1.7,
+            }}
+          >
+            A <code>DayEvent[]</code>. Each event needs a Jalali{' '}
+            <code>{'date: { year, month, day }'}</code>; <code>label</code>,{' '}
+            <code>color</code>, <code>className</code> and <code>id</code> are
+            optional. Every event on a day draws one dot, so three events on the
+            same date show three dots — set <code>color</code> to override{' '}
+            <code>--jdp-badge-color</code> for that badge alone. Edits apply
+            instantly.
+          </p>
+          <textarea
+            value={eventsJson}
+            onChange={(e) => setEventsJson(e.target.value)}
+            spellCheck={false}
+            rows={12}
+            style={{
+              width: '100%',
+              resize: 'vertical',
+              fontFamily: 'ui-monospace, Menlo, Consolas, monospace',
+              fontSize: 13,
+              lineHeight: 1.6,
+              padding: 14,
+              borderRadius: 10,
+              border: `1px solid ${parsedEvents.error ? '#dc2626' : 'var(--line)'}`,
+              background: '#fafaf9',
+              color: 'var(--ink)',
+              outline: 'none',
+            }}
+          />
+          <p
+            style={{
+              margin: '10px 0 0',
+              fontSize: 12.5,
+              color: parsedEvents.error ? '#dc2626' : '#16a34a',
+            }}
+          >
+            {parsedEvents.error
+              ? `⚠ ${parsedEvents.error}`
+              : '✓ Valid — applied above.'}
           </p>
         </Panel>
       )}

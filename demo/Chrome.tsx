@@ -62,8 +62,8 @@ export function Hero() {
         }}
       >
         A self-contained, RTL-first calendar — single &amp; range selection,
-        injectable holidays, theming via CSS variables, and a headless hook for
-        building your own UI.
+        injectable holidays, per-day event badges, theming via CSS variables,
+        and a headless hook for building your own UI.
       </p>
       <div
         style={{
