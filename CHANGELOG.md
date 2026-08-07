@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/aliasadolahi74/jalali-datepicker/compare/v1.0.1...v1.1.0) (2026-08-07)
+
+
+### Features
+
+* export a presentational <JalaliMonthGrid> ([#12](https://github.com/aliasadolahi74/jalali-datepicker/issues/12)) ([0db8549](https://github.com/aliasadolahi74/jalali-datepicker/commit/0db8549d662fd8b4c0f17e8d04dea148bdbcf330))
+
 ## [1.0.1](https://github.com/aliasadolahi74/jalali-datepicker/compare/v1.0.0...v1.0.1) (2026-08-07)
 
 
