@@ -8,10 +8,12 @@
 
 // ----- Styled component -----
 export { JalaliDatePicker } from './components/JalaliDatePicker';
-export type {
-  JalaliDatePickerProps,
-  DayClickInfo,
-} from './components/JalaliDatePicker';
+export type { JalaliDatePickerProps } from './components/JalaliDatePicker';
+export type { DayClickInfo } from './components/dayClick';
+
+// ----- Presentational month grid (read-only calendars) -----
+export { JalaliMonthGrid } from './components/JalaliMonthGrid';
+export type { JalaliMonthGridProps } from './components/JalaliMonthGrid';
 
 // ----- Headless hook (build your own UI on top) -----
 export { useJalaliCalendar } from './react/useJalaliCalendar';
@@ -60,6 +62,8 @@ export {
   JALALI_MONTHS,
   PERSIAN_WEEKDAYS_LONG,
   PERSIAN_WEEKDAYS_SHORT,
+  WEEKDAY,
+  IRAN_WEEKEND,
 } from './core/constants';
 export type {
   JalaliDate,
@@ -67,6 +71,7 @@ export type {
   CalendarView,
   BaseDayCell,
 } from './core/types';
+export type { MonthGridOptions } from './core/calendar';
 
 // ----- Holidays / days off (injectable config) -----
 export { resolveDayMeta } from './holidays/resolve';

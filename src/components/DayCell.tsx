@@ -1,11 +1,8 @@
 'use client';
 
-import { JALALI_MONTHS, PERSIAN_WEEKDAYS_LONG } from '../core/constants';
 import type { JalaliDate } from '../core/types';
-import { toPersianDigits } from '../format/digits';
 import type { EnrichedDayCell } from '../react/useJalaliCalendar';
-import { cn } from '../utils/cn';
-import styles from './JalaliDatePicker.module.css';
+import { DayContent, dayClassName, dayText, isDayTinted } from './dayVisual';
 
 interface DayCellProps {
   cell: EnrichedDayCell;
@@ -19,6 +16,11 @@ interface DayCellProps {
   onHover?: (date: JalaliDate) => void;
 }
 
+/**
+ * The interactive day cell: a real button inside the picker's `role="grid"`,
+ * carrying selection, focus and hover. The look comes entirely from `dayVisual`,
+ * which the read-only grid shares.
+ */
 export function DayCell({
   cell,
   tabIndex,
@@ -28,25 +30,7 @@ export function DayCell({
   onFocus,
   onHover,
 }: DayCellProps) {
-  // "Off" is factual; tinting is a styling choice. A consumer can turn the
-  // weekend tint off and still have holidays read as red.
-  const isTinted = cell.isHoliday || (cell.isWeekend && tintWeekends);
-
-  // Every event's label, even those whose badge is truncated away — the badges
-  // are decorative, so this text is the only channel that carries the detail.
-  const eventLabels = cell.events
-    .map((event) => event.label)
-    .filter((label): label is string => Boolean(label));
-
-  // Built from constants (no per-cell date conversion) to keep 42 cells cheap.
-  const label = [
-    PERSIAN_WEEKDAYS_LONG[cell.weekday],
-    `${toPersianDigits(cell.date.day)} ${JALALI_MONTHS[cell.date.month - 1]} ${toPersianDigits(cell.date.year)}`,
-    ...cell.holidayLabels,
-    ...eventLabels,
-  ].join('، ');
-
-  const tooltip = [...cell.holidayLabels, ...eventLabels].join('، ');
+  const { label, tooltip } = dayText(cell, cell.holidayLabels, cell.events);
 
   return (
     <button
@@ -63,27 +47,19 @@ export function DayCell({
       onClick={() => onSelect(cell)}
       onFocus={() => onFocus(cell.key)}
       onMouseEnter={onHover ? () => onHover(cell.date) : undefined}
-      className={cn(
-        styles.day,
-        cell.isOutside && styles.dayOutside,
-        isTinted && styles.dayOff,
-        cell.isInRange && !cell.isSelected && styles.dayInRange,
-        cell.isToday && styles.dayToday,
-        cell.isSelected && styles.daySelected,
-      )}
+      className={dayClassName({
+        isOutside: cell.isOutside,
+        isToday: cell.isToday,
+        isTinted: isDayTinted(cell, tintWeekends),
+        isInRange: cell.isInRange,
+        isSelected: cell.isSelected,
+      })}
     >
-      <span className={styles.dayNumber}>{toPersianDigits(cell.date.day)}</span>
-      {cell.events.length > 0 && maxBadges > 0 && (
-        <span className={styles.badges} aria-hidden="true">
-          {cell.events.slice(0, maxBadges).map((event, index) => (
-            <span
-              key={event.id ?? index}
-              className={cn(styles.badge, event.className)}
-              style={event.color ? { background: event.color } : undefined}
-            />
-          ))}
-        </span>
-      )}
+      <DayContent
+        day={cell.date.day}
+        events={cell.events}
+        maxBadges={maxBadges}
+      />
     </button>
   );
 }

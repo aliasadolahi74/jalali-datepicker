@@ -1,4 +1,5 @@
 import { Footer, Header, Hero } from './Chrome';
+import { MonthGridDemo } from './MonthGridDemo';
 import { Playground } from './Playground';
 
 /** Assembles the showcase page. */
@@ -8,6 +9,9 @@ export function App() {
       <Header />
       <Hero />
       <Playground />
+      <div style={{ marginTop: 24 }}>
+        <MonthGridDemo />
+      </div>
       <Footer />
     </div>
   );
