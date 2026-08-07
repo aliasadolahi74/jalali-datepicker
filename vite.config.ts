@@ -3,17 +3,17 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 // Anything that should NOT be bundled into the package output. React is a peer
-// dependency; dayjs/jalaliday are runtime deps the consumer installs. Subpath
-// imports (dayjs/locale/fa, jalaliday/dayjs, react/jsx-runtime) are matched too.
-const external = [
-  'react',
-  'react-dom',
-  /^react\//,
-  'dayjs',
-  /^dayjs\//,
-  'jalaliday',
-  /^jalaliday\//,
-];
+// dependency; dayjs is a runtime dep the consumer installs. Subpath imports
+// (dayjs/locale/fa.js, react/jsx-runtime) are matched too.
+//
+// `jalaliday` is deliberately NOT external: it is ESM-only (its exports map
+// points at .mjs with no `require` condition), so leaving it external produces a
+// `require('jalaliday/dayjs')` in the CJS build that either throws ERR_REQUIRE_ESM
+// on older Node or — on Node >=22.12, where require(esm) works — hands
+// `dayjs.extend` a module namespace instead of the plugin function
+// ("TypeError: t is not a function"). Inlining it (~3 kB, MIT) makes the CJS
+// output actually loadable.
+const external = ['react', 'react-dom', /^react\//, 'dayjs', /^dayjs\//];
 
 export default defineConfig({
   plugins: [react()],

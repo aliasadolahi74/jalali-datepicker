@@ -20,7 +20,8 @@ A self-contained, **RTL-first Persian (Jalali / Khorshidi) date picker** for Rea
 - 🧮 Correct leap years & month lengths via the dayjs Jalali engine
 - 📦 ESM + CJS, full TypeScript types, tiny public API surface
 
-The engine is **dayjs + [`jalaliday`](https://www.npmjs.com/package/jalaliday)** (both MIT).
+The engine is **dayjs + [`jalaliday`](https://www.npmjs.com/package/jalaliday)** (both MIT);
+`jalaliday` is bundled, so `dayjs` is the only dependency you install.
 
 ## How it compares
 
@@ -58,14 +59,17 @@ with first-class holiday support and a headless option, this library is the tigh
 ## Install
 
 ```bash
-npm install @aliasadollahi/jalali-datepicker dayjs jalaliday
+npm install @aliasadollahi/jalali-datepicker dayjs
 # or
-yarn add @aliasadollahi/jalali-datepicker dayjs jalaliday
+yarn add @aliasadollahi/jalali-datepicker dayjs
 ```
 
-`react` (>=18) is a peer dependency. `dayjs` and `jalaliday` are runtime
-dependencies and will be installed automatically; they are listed above only so
-you can pin them yourself if you wish.
+`react` (>=18) is a peer dependency. `dayjs` is the one runtime dependency and
+is installed automatically; it is listed above only so you can pin it yourself
+if you wish. The Jalali plugin is bundled into the package, so there is nothing
+else to install.
+
+Both `import` and `require` work in plain Node, with no bundler required.
 
 ## Usage
 
