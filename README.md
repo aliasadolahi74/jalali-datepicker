@@ -12,7 +12,8 @@ A self-contained, **RTL-first Persian (Jalali / Khorshidi) date picker** for Rea
 
 - 📅 **Single & range** selection
 - 🎯 **Headless hook** (`useJalaliCalendar`) — build your own UI, or use the styled `<JalaliDatePicker />`
-- 🏖️ **Injectable holidays / days-off** (ships a default Iran config)
+- 🏖️ **Injectable holidays / days-off** — recurring, one-off, and date-**range** rules, with categories (ships a default Iran config)
+- 🔤 **Jalali parsing & day math** — `parseJalali`, `addDays`, `diffDays`, `eachDayOfInterval`
 - 🔵 **Per-day event badges** — stylable dots under any day, plus an `onDayClick` that hands you that day's events
 - 🎨 Themeable purely through **CSS variables** — no Tailwind, no design-system coupling
 - ⌨️ Keyboard navigation, header drill-down (day → month → year), an "امروز" shortcut
@@ -188,6 +189,7 @@ per event via `className` for anything else.
 | `minDate` / `maxDate`      | –               | inclusive bounds                                    |
 | `disabledDate(date)`       | –               | disable arbitrary days                              |
 | `holidays`                 | `IRAN_HOLIDAYS` | weekend + holiday config (see below)                |
+| `tintWeekends`             | `true`          | paint weekends with `--jdp-off-fg`                  |
 | `events`                   | –               | days to mark with badges (see above)                |
 | `maxBadgesPerDay`          | `3`             | badges drawn per day before truncating              |
 | `onDayClick(info)`         | –               | day click + that day's events / holiday labels      |
@@ -205,6 +207,9 @@ import {
   isLeapYear, // Esfand has 30 days
   persianWeekday, // (date) → 0 = Saturday … 6 = Friday
   addMonths, // (year, month, delta) → { year, month }
+  addDays, // (date, delta) → JalaliDate
+  diffDays, // (a, b) → whole days, b - a
+  eachDayOfInterval, // (start, end) → JalaliDate[], both inclusive
   compareJalali, // (a, b) → -1 | 0 | 1
   isSameDay,
   clampToRange, // (date, min?, max?) → JalaliDate
@@ -217,6 +222,33 @@ import {
 
 `dayKey` is the supported way to index your own per-day data — it produces
 exactly the string `BaseDayCell.key` carries, so the two can never drift.
+
+`eachDayOfInterval` returns `[]` when `end` is before `start` (an empty range,
+not a reversed one), and both bounds are inclusive. All three helpers cross
+month and year boundaries correctly, including Esfand's 29/30 leap-year split.
+
+### Parsing Jalali strings
+
+The inverse of `toJalali` — for APIs that hand you a rendered Persian date and
+no ISO value alongside:
+
+```ts
+import { parseJalali, isValidJalali } from '@aliasadollahi/jalali-datepicker';
+
+parseJalali('۵ شهریور ۱۴۰۵'); // { year: 1405, month: 6, day: 5 }
+parseJalali('1404/01/13'); // { year: 1404, month: 1, day: 13 }
+parseJalali('۱۴۰۵-۱۲-۳۱'); // null — Esfand 1405 has only 29 days
+parseJalali('13/01/1404', 'DD/MM/YYYY'); // explicit pattern
+
+isValidJalali({ year: 1403, month: 12, day: 30 }); // true — 1403 is a leap year
+isValidJalali({ year: 1404, month: 12, day: 30 }); // false
+```
+
+It **returns `null` instead of throwing**, so you can fall back to rendering the
+server's string verbatim. Persian, Arabic-Indic, and Latin digits all work, and
+ZWNJ, bidi marks, and repeated spaces are tolerated. Without a pattern it tries
+`'YYYY/MM/DD'`, `'YYYY-MM-DD'`, then `'D MMMM YYYY'`. Supported tokens: `YYYY`,
+`YY`, `MMMM`, `MM`, `M`, `DD`, `D`.
 
 ## Injecting days off / holidays
 
@@ -231,12 +263,53 @@ const holidays: HolidayConfig = {
   rules: [
     { type: 'recurring', month: 1, day: 1, label: 'نوروز' }, // every year
     { type: 'specific', year: 1405, month: 1, day: 13, label: 'عید فطر' }, // one-off (lunar)
+    {
+      type: 'range', // a contiguous span, both ends inclusive
+      start: { year: 1405, month: 6, day: 5 },
+      end: { year: 1405, month: 6, day: 7 },
+      label: 'تعطیلی بازار',
+      category: 'closure',
+    },
   ],
 };
 ```
 
 Fixed solar holidays are `recurring`; lunar (Hijri) holidays shift each year and
-should be injected as `specific` per-year entries.
+should be injected as `specific` per-year entries. Use `range` for a shutdown or
+vacation so a two-week closure stays one rule instead of fourteen.
+
+### Categories: styling one kind of day differently
+
+Every rule takes an optional `category`. `resolveDayMeta` reports the distinct
+categories that matched, and the picker mirrors them onto the day cell as a
+`data-holiday-categories` attribute, so you can style a market closure
+differently from a public holiday without a parallel lookup table:
+
+```css
+.my-picker [data-holiday-categories~='closure'] {
+  text-decoration: underline dotted;
+}
+```
+
+```ts
+const meta = resolveDayMeta(date, weekday, holidays);
+meta.categories; // ['closure']
+meta.matched; // the HolidayRule objects themselves
+meta.labels; // ['تعطیلی بازار']
+```
+
+### Weekends vs. tinting
+
+`isWeekend` is **factual** — it reports what `weekends` says, always. Whether
+weekends are _painted_ with `--jdp-off-fg` is a separate, styling decision:
+
+```tsx
+// Keep the package's weekend knowledge, but style Fridays yourself.
+<JalaliDatePicker holidays={holidays} tintWeekends={false} />
+```
+
+Holidays stay tinted either way, so a holiday and a plain weekend become
+visually distinguishable — which `isOff` alone cannot express.
 
 ## Theming (CSS variables)
 

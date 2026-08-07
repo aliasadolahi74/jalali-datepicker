@@ -38,6 +38,7 @@ export {
 } from './format/convert';
 export type { TimestampOptions, JalaliFormatOptions } from './format/convert';
 export { toPersianDigits, toLatinDigits } from './format/digits';
+export { parseJalali, isValidJalali } from './format/parse';
 
 // ----- Core calendar math (for custom UIs) -----
 export {
@@ -51,6 +52,9 @@ export {
   clampToRange,
   buildMonthGrid,
   dayKey,
+  addDays,
+  diffDays,
+  eachDayOfInterval,
 } from './core/calendar';
 export {
   JALALI_MONTHS,
@@ -72,6 +76,7 @@ export type {
   HolidayRule,
   RecurringHolidayRule,
   SpecificHolidayRule,
+  RangeHolidayRule,
   DayMeta,
 } from './holidays/types';
 

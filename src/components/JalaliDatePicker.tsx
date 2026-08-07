@@ -24,6 +24,8 @@ export interface DayClickInfo {
   events: DayEvent[];
   /** Labels of every holiday rule that matched this day. */
   holidayLabels: string[];
+  /** Distinct `category` values among the matched holiday rules. */
+  holidayCategories: string[];
   isWeekend: boolean;
   isHoliday: boolean;
   /** Weekend or holiday. */
@@ -45,6 +47,13 @@ interface CommonProps {
   maxDate?: JalaliDate | null;
   disabledDate?: (date: JalaliDate) => boolean;
   holidays?: HolidayConfig;
+  /**
+   * Whether weekend days are tinted with `--jdp-off-fg`. Default `true`.
+   * Set `false` to keep the package's weekend knowledge (`isWeekend` stays
+   * accurate, the `weekends` config still applies) while styling weekends
+   * yourself. Holidays are tinted regardless.
+   */
+  tintWeekends?: boolean;
   /**
    * Days to mark with badges. Each event on a day draws one circle beneath the
    * day number; style them with the `--jdp-badge-*` variables, or per-event via
@@ -94,6 +103,7 @@ export function JalaliDatePicker(props: JalaliDatePickerProps) {
     showFooter = true,
     showToday = true,
     maxBadgesPerDay = 3,
+    tintWeekends = true,
   } = props;
 
   const cal = useJalaliCalendar({
@@ -117,6 +127,7 @@ export function JalaliDatePicker(props: JalaliDatePickerProps) {
       date: cell.date,
       events: cell.events,
       holidayLabels: cell.holidayLabels,
+      holidayCategories: cell.holidayCategories,
       isWeekend: cell.isWeekend,
       isHoliday: cell.isHoliday,
       isOff: cell.isOff,
@@ -148,6 +159,8 @@ export function JalaliDatePicker(props: JalaliDatePickerProps) {
           weeks={cal.weeks}
           weekdayLabels={cal.weekdayLabels}
           maxBadgesPerDay={maxBadgesPerDay}
+          weekends={cal.weekends}
+          tintWeekends={tintWeekends}
           onSelect={handleDaySelect}
           onHover={cal.selectionMode === 'range' ? cal.hoverDay : undefined}
         />

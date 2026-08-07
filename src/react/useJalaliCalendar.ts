@@ -77,6 +77,8 @@ export interface EnrichedDayCell extends BaseDayCell {
   isHoliday: boolean;
   isOff: boolean;
   holidayLabels: string[];
+  /** Distinct `category` values of the holiday rules that matched this day. */
+  holidayCategories: string[];
   /** Every event falling on this day, in the order they were passed. */
   events: DayEvent[];
   /** Range mode: this day is the (lower) start endpoint. */
@@ -109,6 +111,8 @@ export interface UseJalaliCalendarResult {
   cursor: { year: number; month: number };
   headerLabel: string;
   weekdayLabels: readonly string[];
+  /** The resolved weekend indices (0 = Saturday … 6 = Friday), so a UI needn't hardcode Friday. */
+  weekends: readonly number[];
   weeks: EnrichedDayCell[][];
   monthOptions: MonthOption[];
   yearOptions: YearOption[];
@@ -256,6 +260,7 @@ export function useJalaliCalendar(
             isHoliday: meta.isHoliday,
             isOff: meta.isOff,
             holidayLabels: meta.labels,
+            holidayCategories: meta.categories,
             events: eventsByDay?.get(cell.key) ?? NO_EVENTS,
             isRangeStart,
             isRangeEnd,
@@ -464,6 +469,7 @@ export function useJalaliCalendar(
     cursor,
     headerLabel,
     weekdayLabels: PERSIAN_WEEKDAYS_SHORT,
+    weekends: holidays.weekends,
     weeks,
     monthOptions,
     yearOptions,

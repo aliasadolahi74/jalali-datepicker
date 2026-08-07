@@ -2,7 +2,7 @@
 
 import { type KeyboardEvent, useMemo, useRef, useState } from 'react';
 
-import { DAYS_IN_WEEK, FRIDAY_INDEX } from '../core/constants';
+import { DAYS_IN_WEEK } from '../core/constants';
 import type { JalaliDate } from '../core/types';
 import type { EnrichedDayCell } from '../react/useJalaliCalendar';
 import { cn } from '../utils/cn';
@@ -14,6 +14,10 @@ interface DayGridProps {
   weekdayLabels: readonly string[];
   /** How many event badges each day draws before truncating. */
   maxBadgesPerDay: number;
+  /** Persian weekday indices treated as weekends (drives the header tint). */
+  weekends: readonly number[];
+  /** Whether weekends get the "off" tint, in the header row and the cells. */
+  tintWeekends: boolean;
   onSelect: (cell: EnrichedDayCell) => void;
   /** Range mode: called with the hovered day (and `null` when the pointer leaves the grid). */
   onHover?: (date: JalaliDate | null) => void;
@@ -23,6 +27,8 @@ export function DayGrid({
   weeks,
   weekdayLabels,
   maxBadgesPerDay,
+  weekends,
+  tintWeekends,
   onSelect,
   onHover,
 }: DayGridProps) {
@@ -100,7 +106,7 @@ export function DayGrid({
             key={label}
             className={cn(
               styles.weekday,
-              index === FRIDAY_INDEX && styles.weekdayOff,
+              tintWeekends && weekends.includes(index) && styles.weekdayOff,
             )}
           >
             {label}
@@ -123,6 +129,7 @@ export function DayGrid({
                 cell={cell}
                 tabIndex={cell.key === active ? 0 : -1}
                 maxBadges={maxBadgesPerDay}
+                tintWeekends={tintWeekends}
                 onSelect={onSelect}
                 onFocus={setActiveKey}
                 onHover={onHover}

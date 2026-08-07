@@ -30,6 +30,13 @@ const SAMPLE_JSON = JSON.stringify(
       { type: 'recurring', month: 1, day: 1, label: 'Nowruz' },
       { type: 'recurring', month: 1, day: 13, label: 'Nature Day' },
       { type: 'specific', year: 1404, month: 7, day: 1, label: 'Team offsite' },
+      {
+        type: 'range',
+        start: { year: 1404, month: 1, day: 20 },
+        end: { year: 1404, month: 1, day: 23 },
+        label: 'Market closure',
+        category: 'closure',
+      },
     ],
   },
   null,
@@ -166,6 +173,7 @@ export function Playground() {
   const [showFooter, setShowFooter] = useState(true);
   const [holidaySource, setHolidaySource] = useState<HolidaySource>('iran');
   const [customJson, setCustomJson] = useState(SAMPLE_JSON);
+  const [tintWeekends, setTintWeekends] = useState(true);
   const [eventSource, setEventSource] = useState<EventSource>('sample');
   const [eventsJson, setEventsJson] = useState(SAMPLE_EVENTS_JSON);
   const [maxBadges, setMaxBadges] = useState(3);
@@ -264,6 +272,11 @@ export function Playground() {
               checked={showFooter}
               onChange={setShowFooter}
             />
+            <Toggle
+              label="Tint weekends"
+              checked={tintWeekends}
+              onChange={setTintWeekends}
+            />
             <Field label="Event badges">
               <SegmentedControl
                 value={eventSource}
@@ -308,6 +321,7 @@ export function Playground() {
               mode={mode}
               showFooter={showFooter}
               holidays={holidays}
+              tintWeekends={tintWeekends}
               events={events}
               maxBadgesPerDay={maxBadges}
               onDayClick={setLastClick}
@@ -322,6 +336,7 @@ export function Playground() {
               mode={mode}
               showFooter={showFooter}
               holidays={holidays}
+              tintWeekends={tintWeekends}
               events={events}
               maxBadgesPerDay={maxBadges}
               onDayClick={setLastClick}
@@ -389,6 +404,10 @@ export function Playground() {
                 <OutputRow
                   label="Holidays"
                   value={lastClick.holidayLabels.join('، ') || '—'}
+                />
+                <OutputRow
+                  label="Categories"
+                  value={lastClick.holidayCategories.join(', ') || '—'}
                 />
                 <OutputRow label="Off" value={lastClick.isOff ? 'yes' : 'no'} />
               </div>

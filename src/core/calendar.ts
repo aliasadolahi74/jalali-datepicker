@@ -51,6 +51,42 @@ export function addMonths(
   };
 }
 
+const DAY_MS = 86_400_000;
+
+/**
+ * Add `delta` days (negative to subtract), crossing month and year boundaries
+ * correctly — including Esfand's 29/30 split in leap years.
+ */
+export function addDays(date: JalaliDate, delta: number): JalaliDate {
+  return toJalaliDate(jalaliDayjs(date).add(delta, 'day'));
+}
+
+/**
+ * Whole days from `a` to `b` (`b - a`): positive when `b` is later, negative
+ * when earlier, 0 for the same day. Rounded, so a DST shift between the two
+ * dates cannot leak a fractional day.
+ */
+export function diffDays(a: JalaliDate, b: JalaliDate): number {
+  return Math.round(
+    (jalaliDayjs(b).valueOf() - jalaliDayjs(a).valueOf()) / DAY_MS,
+  );
+}
+
+/**
+ * Every day from `start` to `end`, both inclusive and in ascending order.
+ * Returns `[]` when `end` is before `start` — the range is empty, not reversed.
+ */
+export function eachDayOfInterval(
+  start: JalaliDate,
+  end: JalaliDate,
+): JalaliDate[] {
+  const span = diffDays(start, end);
+  if (span < 0) return [];
+  const days: JalaliDate[] = new Array(span + 1);
+  for (let i = 0; i <= span; i++) days[i] = addDays(start, i);
+  return days;
+}
+
 /** Returns -1 when a < b, 0 when equal, 1 when a > b. */
 export function compareJalali(a: JalaliDate, b: JalaliDate): number {
   if (a.year !== b.year) return a.year < b.year ? -1 : 1;

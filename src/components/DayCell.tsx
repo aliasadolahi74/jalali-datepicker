@@ -12,6 +12,8 @@ interface DayCellProps {
   tabIndex: number;
   /** How many badges to draw before truncating. */
   maxBadges: number;
+  /** Whether weekends get the "off" tint. Holidays are tinted either way. */
+  tintWeekends: boolean;
   onSelect: (cell: EnrichedDayCell) => void;
   onFocus: (key: string) => void;
   onHover?: (date: JalaliDate) => void;
@@ -21,10 +23,15 @@ export function DayCell({
   cell,
   tabIndex,
   maxBadges,
+  tintWeekends,
   onSelect,
   onFocus,
   onHover,
 }: DayCellProps) {
+  // "Off" is factual; tinting is a styling choice. A consumer can turn the
+  // weekend tint off and still have holidays read as red.
+  const isTinted = cell.isHoliday || (cell.isWeekend && tintWeekends);
+
   // Every event's label, even those whose badge is truncated away — the badges
   // are decorative, so this text is the only channel that carries the detail.
   const eventLabels = cell.events
@@ -46,6 +53,7 @@ export function DayCell({
       type="button"
       role="gridcell"
       data-key={cell.key}
+      data-holiday-categories={cell.holidayCategories.join(' ') || undefined}
       tabIndex={tabIndex}
       disabled={cell.isDisabled}
       aria-selected={cell.isSelected}
@@ -58,7 +66,7 @@ export function DayCell({
       className={cn(
         styles.day,
         cell.isOutside && styles.dayOutside,
-        cell.isOff && styles.dayOff,
+        isTinted && styles.dayOff,
         cell.isInRange && !cell.isSelected && styles.dayInRange,
         cell.isToday && styles.dayToday,
         cell.isSelected && styles.daySelected,
