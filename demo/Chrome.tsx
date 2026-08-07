@@ -61,9 +61,9 @@ export function Hero() {
           color: 'var(--muted)',
         }}
       >
-        A self-contained, RTL-first calendar — single &amp; range selection,
-        injectable holidays, per-day event badges, theming via CSS variables,
-        and a headless hook for building your own UI.
+        A self-contained, RTL-first calendar — single &amp; range selection, a
+        read-only month grid, injectable holidays, per-day event badges, theming
+        via CSS variables, and a headless hook for building your own UI.
       </p>
       <div
         style={{
