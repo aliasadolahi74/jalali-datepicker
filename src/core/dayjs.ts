@@ -8,12 +8,28 @@
  */
 import dayjs, { type Dayjs } from 'dayjs';
 import jalaliday from 'jalaliday/dayjs';
-import 'dayjs/locale/fa';
+// Extension is required: dayjs ships no `exports` map, so Node's ESM resolver
+// takes the plain-path route and does no extension guessing. Bundlers tolerate
+// the extensionless form; `node --experimental-vm-modules`-free plain Node does
+// not, and throws ERR_MODULE_NOT_FOUND.
+import 'dayjs/locale/fa.js';
 import type { JalaliDate } from './types';
 
-// `extend` is idempotent in dayjs (guarded by an internal flag), so importing
-// this module from multiple places only ever registers the plugin once.
-dayjs.extend(jalaliday);
+// dayjs's own idempotence guard lives on the *plugin function* (`plugin.$i`),
+// which only works while every caller shares one plugin instance. Since the
+// plugin is bundled into this package, our ESM and CJS builds each carry their
+// own copy — and both resolve to the same dayjs module object in Node. Loading
+// both (the dual-package hazard, or two versions of this package in one tree)
+// would then extend the same dayjs twice and double-wrap its prototype, which
+// silently corrupts every conversion. Guard on the dayjs instance instead, via
+// a registry-wide symbol so separate copies of this module agree.
+const INSTALLED = Symbol.for('@aliasadollahi/jalali-datepicker#jalaliday');
+type Guarded = typeof dayjs & { [INSTALLED]?: boolean };
+
+if (!(dayjs as Guarded)[INSTALLED]) {
+  dayjs.extend(jalaliday);
+  (dayjs as Guarded)[INSTALLED] = true;
+}
 
 const pad = (value: number): string => String(value).padStart(2, '0');
 
