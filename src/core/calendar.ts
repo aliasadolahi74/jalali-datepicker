@@ -115,14 +115,28 @@ export function clampToRange(
   return date;
 }
 
+export interface MonthGridOptions {
+  /**
+   * `'fixed'` (default) always returns six weeks, so a picker keeps a stable
+   * height and does not jump when navigating. `'auto'` trims trailing weeks made
+   * entirely of outside days, which is what a static calendar wants — Shahrivar
+   * 1405 touches only five.
+   */
+  weeks?: 'fixed' | 'auto';
+}
+
 /**
- * Build a fixed 6×7 month grid (always 42 cells) for the given Jalali month.
- * Leading cells come from the previous month and trailing cells from the next
- * month, both flagged `isOutside`. Because the grid is Saturday-first and filled
- * day-by-day, a cell's weekday is simply its linear index mod 7 — no per-cell
- * date conversion needed.
+ * Build a 6×7 month grid (42 cells) for the given Jalali month, or a trimmed one
+ * with `{ weeks: 'auto' }`. Leading cells come from the previous month and
+ * trailing cells from the next month, both flagged `isOutside`. Because the grid
+ * is Saturday-first and filled day-by-day, a cell's weekday is simply its linear
+ * index mod 7 — no per-cell date conversion needed.
  */
-export function buildMonthGrid(year: number, month: number): BaseDayCell[][] {
+export function buildMonthGrid(
+  year: number,
+  month: number,
+  options?: MonthGridOptions,
+): BaseDayCell[][] {
   const today = todayJalali();
   const firstWeekday = persianWeekday({ year, month, day: 1 });
   const totalDays = daysInMonth(year, month);
@@ -153,6 +167,12 @@ export function buildMonthGrid(year: number, month: number): BaseDayCell[][] {
       isToday: isSameDay(slot.date, today),
     }));
     weeks.push(week);
+  }
+
+  if (options?.weeks === 'auto') {
+    let end = weeks.length;
+    while (end > 1 && weeks[end - 1].every((cell) => cell.isOutside)) end -= 1;
+    return weeks.slice(0, end);
   }
   return weeks;
 }

@@ -5,6 +5,7 @@ import type { CommitMode, EnrichedDayCell } from '../react/useJalaliCalendar';
 import { useJalaliCalendar } from '../react/useJalaliCalendar';
 import type { HolidayConfig } from '../holidays/types';
 import type { DayEvent } from '../events/types';
+import type { DayClickInfo } from './dayClick';
 import { cn } from '../utils/cn';
 import { CalendarFooter } from './CalendarFooter';
 import { CalendarHeader } from './CalendarHeader';
@@ -13,27 +14,7 @@ import { MonthView } from './MonthView';
 import { YearView } from './YearView';
 import styles from './JalaliDatePicker.module.css';
 
-/**
- * Everything known about the day that was clicked, at click time. Selection
- * state is deliberately absent — it is mid-update when this fires, and the
- * committed value arrives through `onChange` / `onConfirm` instead.
- */
-export interface DayClickInfo {
-  date: JalaliDate;
-  /** Events falling on this day (empty when there are none). */
-  events: DayEvent[];
-  /** Labels of every holiday rule that matched this day. */
-  holidayLabels: string[];
-  /** Distinct `category` values among the matched holiday rules. */
-  holidayCategories: string[];
-  isWeekend: boolean;
-  isHoliday: boolean;
-  /** Weekend or holiday. */
-  isOff: boolean;
-  isToday: boolean;
-  /** The day belongs to the previous/next month (a leading/trailing grid cell). */
-  isOutside: boolean;
-}
+export type { DayClickInfo };
 
 interface CommonProps {
   className?: string;
