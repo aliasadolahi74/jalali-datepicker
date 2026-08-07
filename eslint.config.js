@@ -15,4 +15,11 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
     },
   },
+  // Build/verification scripts run in Node, not the browser.
+  {
+    files: ['scripts/**/*.{js,mjs}'],
+    languageOptions: {
+      globals: { console: 'readonly', process: 'readonly' },
+    },
+  },
 );
