@@ -8,6 +8,7 @@ import {
   type DayClickInfo,
   type DayEvent,
   type HolidayConfig,
+  type JalaliDate,
 } from '../src';
 import { Field, Panel, SegmentedControl, Toggle } from './ui';
 
@@ -45,6 +46,13 @@ const EVENTS: DayEvent[] = [
 ];
 
 /**
+ * Injected `today`, so the ring lands on a day inside the rendered month
+ * regardless of when or where the page is viewed — the same seam a Tehran
+ * calendar uses to stop following the viewer's timezone.
+ */
+const PINNED_TODAY: JalaliDate = { year: 1405, month: 6, day: 10 };
+
+/**
  * Shahrivar 1405 is the month the `weeks` option is about: it touches only five
  * weeks, so `'auto'` drops a row that `'fixed'` keeps.
  */
@@ -54,6 +62,7 @@ export function MonthGridDemo() {
   const [interactive, setInteractive] = useState(false);
   const [fillToday, setFillToday] = useState(false);
   const [denseMetrics, setDenseMetrics] = useState(false);
+  const [pinToday, setPinToday] = useState(false);
   const [clicked, setClicked] = useState<DayClickInfo | null>(null);
 
   return (
@@ -111,6 +120,11 @@ export function MonthGridDemo() {
             checked={denseMetrics}
             onChange={setDenseMetrics}
           />
+          <Toggle
+            label="Pin today to ۱۰ شهریور"
+            checked={pinToday}
+            onChange={setPinToday}
+          />
           <p style={{ margin: 0, fontSize: 12.5, color: 'var(--muted)' }}>
             {clicked
               ? `${toJalali(clicked.date, 'D MMMM YYYY')}${
@@ -164,6 +178,7 @@ export function MonthGridDemo() {
             holidays={HOLIDAYS}
             events={EVENTS}
             tintWeekends={tintWeekends}
+            today={pinToday ? PINNED_TODAY : undefined}
             onDayClick={interactive ? setClicked : undefined}
           />
         </div>

@@ -29,6 +29,13 @@ interface CommonProps {
   disabledDate?: (date: JalaliDate) => boolean;
   holidays?: HolidayConfig;
   /**
+   * What counts as today: the ringed cell, the "current" month/year markers, and
+   * where امروز jumps to. Defaults to the ambient timezone, which is wrong for a
+   * calendar that means a fixed locale but is viewed from elsewhere, and unstable
+   * when a server and a browser disagree. `null` marks no day.
+   */
+  today?: JalaliDate | null;
+  /**
    * Whether weekend days are tinted with `--jdp-off-fg`. Default `true`.
    * Set `false` to keep the package's weekend knowledge (`isWeekend` stays
    * accurate, the `weekends` config still applies) while styling weekends
@@ -99,6 +106,7 @@ export function JalaliDatePicker(props: JalaliDatePickerProps) {
     disabledDate: props.disabledDate,
     holidays: props.holidays,
     events: props.events,
+    today: props.today,
     mode: props.mode,
   });
 

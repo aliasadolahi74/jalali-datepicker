@@ -24,5 +24,10 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Test
+        # Under several timezones: the "today" marker used to follow whatever
+        # zone the process ran in, and only a matrix catches a regression.
+        run: npm run test:timezones
+
       - name: Build
         run: npm run build

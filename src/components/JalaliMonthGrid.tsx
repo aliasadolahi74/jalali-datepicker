@@ -15,7 +15,7 @@ import type { ReactNode } from 'react';
 
 import { buildMonthGrid } from '../core/calendar';
 import { PERSIAN_WEEKDAYS_SHORT } from '../core/constants';
-import type { BaseDayCell } from '../core/types';
+import type { BaseDayCell, JalaliDate } from '../core/types';
 import type { DayEvent } from '../events/types';
 import { groupEventsByDay } from '../events/group';
 import { resolveDayMeta } from '../holidays/resolve';
@@ -41,6 +41,12 @@ export interface JalaliMonthGridProps {
    * height. `'auto'` renders only the weeks the month actually touches.
    */
   weeks?: 'fixed' | 'auto';
+  /**
+   * What counts as today, i.e. which cell gets the today ring. Defaults to the
+   * ambient timezone — inject it for a calendar that means a fixed locale, or to
+   * keep a server and client render agreeing. `null` marks no day.
+   */
+  today?: JalaliDate | null;
   /** Paint weekends with `--jdp-off-fg`. Default `true`. Holidays are painted regardless. */
   tintWeekends?: boolean;
   /** Render the ش…ج header row. Default `true`. */
@@ -64,6 +70,7 @@ export function JalaliMonthGrid({
   events,
   maxBadgesPerDay = 3,
   weeks = 'fixed',
+  today,
   tintWeekends = true,
   showWeekdayHeader = true,
   renderDay,
@@ -73,7 +80,7 @@ export function JalaliMonthGrid({
   // Cheap enough to do inline: buildMonthGrid is pure arithmetic and the event
   // index is one pass. Memoizing here would only trade that for a dep array
   // that consumers would have to keep stable anyway.
-  const grid = buildMonthGrid(year, month, { weeks });
+  const grid = buildMonthGrid(year, month, { weeks, today });
   const eventsByDay = events?.length ? groupEventsByDay(events) : null;
   const interactive = Boolean(onDayClick);
 
