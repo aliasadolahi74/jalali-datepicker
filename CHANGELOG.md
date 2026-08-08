@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/aliasadolahi74/jalali-datepicker/compare/v1.2.0...v1.3.0) (2026-08-08)
+
+
+### Features
+
+* let the consumer decide what "today" is ([#15](https://github.com/aliasadolahi74/jalali-datepicker/issues/15)) ([4dd33af](https://github.com/aliasadolahi74/jalali-datepicker/commit/4dd33af497767a0846dbcf5a6ece2250bdf6190e))
+
 # [1.2.0](https://github.com/aliasadolahi74/jalali-datepicker/compare/v1.1.0...v1.2.0) (2026-08-07)
 
 
