@@ -214,6 +214,7 @@ still never claims to be a grid widget.
 | `events`            | –               | same badges the picker draws                   |
 | `maxBadgesPerDay`   | `3`             | badges per day before truncating               |
 | `tintWeekends`      | `true`          | paint weekends with `--jdp-off-fg`             |
+| `today`             | ambient zone    | what counts as today; `null` marks none        |
 | `showWeekdayHeader` | `true`          | render the ش…ج row                             |
 | `renderDay`         | –               | `(cell, meta) => ReactNode`, replaces contents |
 | `onDayClick`        | –               | omit for a fully inert calendar                |
@@ -239,6 +240,42 @@ The grid resolves the `--jdp-*` variables itself, so it themes standalone and
 does not have to be nested inside a picker. It ships bare — no card border,
 padding, or shadow — so you can drop it straight into your own container.
 
+### Deciding what "today" is
+
+By default the today marker follows the **ambient** timezone — the browser's zone
+on the client, `TZ` on a server. That is wrong in two common cases:
+
+- **A calendar for a fixed locale, viewed from elsewhere.** A Tehran market
+  calendar opened from New York highlights the wrong day for the hours after
+  Tehran's midnight.
+- **Server rendering.** A client component still renders to HTML in Node. If the
+  server's zone differs from the browser's, the initial markup marks a different
+  day than the client does after hydration — silent, and only near midnight.
+
+Rather than teach the package about timezones, inject the date:
+
+```tsx
+import { JalaliMonthGrid, todayJalali } from '@aliasadollahi/jalali-datepicker';
+
+// Whatever rule you want: a fixed zone, the user's profile, a pinned date.
+const today = todayJalali('Asia/Tehran');
+
+<JalaliMonthGrid year={1405} month={5} today={today} />;
+<JalaliDatePicker today={today} />; // also drives where امروز jumps to
+```
+
+`today` is accepted by `<JalaliDatePicker>`, `<JalaliMonthGrid>`,
+`useJalaliCalendar`, and `buildMonthGrid`. Omit it for today's behaviour; pass
+`null` to mark no day at all.
+
+`todayJalali(timeZone?)` is the convenience — with no argument it reads the
+ambient zone, with an IANA name it pins one. You can compute the date any other
+way you like; it is a plain `JalaliDate`.
+
+Because it is a value rather than a policy, it is also the seam that makes this
+testable without mocking the clock — the suite asserts the same marked day under
+three different `TZ` settings.
+
 ### Key props
 
 | prop                       | default         | meaning                                             |
@@ -252,6 +289,7 @@ padding, or shadow — so you can drop it straight into your own container.
 | `disabledDate(date)`       | –               | disable arbitrary days                              |
 | `holidays`                 | `IRAN_HOLIDAYS` | weekend + holiday config (see below)                |
 | `tintWeekends`             | `true`          | paint weekends with `--jdp-off-fg`                  |
+| `today`                    | ambient zone    | what counts as today; `null` marks none             |
 | `events`                   | –               | days to mark with badges (see above)                |
 | `maxBadgesPerDay`          | `3`             | badges drawn per day before truncating              |
 | `onDayClick(info)`         | –               | day click + that day's events / holiday labels      |
@@ -264,7 +302,7 @@ reimplement Jalali math:
 
 ```ts
 import {
-  todayJalali, // JalaliDate for today (local time)
+  todayJalali, // (timeZone?) → JalaliDate for today; ambient zone by default
   daysInMonth, // (year, month) → 29 | 30 | 31
   isLeapYear, // Esfand has 30 days
   persianWeekday, // (date) → 0 = Saturday … 6 = Friday
@@ -275,7 +313,7 @@ import {
   compareJalali, // (a, b) → -1 | 0 | 1
   isSameDay,
   clampToRange, // (date, min?, max?) → JalaliDate
-  buildMonthGrid, // (year, month, { weeks }) → BaseDayCell[][]
+  buildMonthGrid, // (year, month, { weeks, today }) → BaseDayCell[][]
   dayKey, // (date) → "1404-1-13" — same string as BaseDayCell.key
   WEEKDAY, // { SATURDAY: 0 … FRIDAY: 6 }
   IRAN_WEEKEND, // [6] — drop straight into HolidayConfig.weekends

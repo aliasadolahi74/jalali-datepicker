@@ -9,9 +9,32 @@ import { dayjs, jalaliDayjs, toJalaliDate } from './dayjs';
 import type { BaseDayCell, JalaliDate } from './types';
 import { CELLS_IN_GRID, DAYS_IN_WEEK, jsDayToPersian } from './constants';
 
-/** Today in the Jalali calendar (local time). */
-export function todayJalali(): JalaliDate {
-  return toJalaliDate(dayjs());
+/**
+ * Today in the Jalali calendar.
+ *
+ * With no argument this reads the **ambient** timezone, which is whatever the
+ * code happens to run in — the browser's zone on the client, `TZ` on a server.
+ * Pass an IANA `timeZone` to pin it, e.g. for a calendar that always means
+ * Tehran no matter where it is viewed from:
+ *
+ * ```ts
+ * todayJalali('Asia/Tehran');
+ * ```
+ *
+ * This is only a convenience. Anything that renders a grid takes an injectable
+ * `today`, which is the seam that actually lets a consumer decide the rule.
+ */
+export function todayJalali(timeZone?: string): JalaliDate {
+  if (!timeZone) return toJalaliDate(dayjs());
+  // 'en-CA' formats as YYYY-MM-DD, which dayjs parses as a plain local date —
+  // so the zone's calendar date survives without dragging its offset along.
+  const iso = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+  return toJalaliDate(dayjs(iso));
 }
 
 /** Number of days in the given Jalali month (handles Esfand's 29/30 split). */
@@ -123,6 +146,17 @@ export interface MonthGridOptions {
    * 1405 touches only five.
    */
   weeks?: 'fixed' | 'auto';
+  /**
+   * What counts as today, i.e. which cell gets `isToday`.
+   *
+   * Defaults to {@link todayJalali} — the ambient timezone — which is wrong for
+   * a calendar that means a fixed locale but is viewed from elsewhere, and
+   * unstable across a server/client render boundary where the two zones differ.
+   * Inject the date and the package stops guessing.
+   *
+   * `null` marks no cell at all.
+   */
+  today?: JalaliDate | null;
 }
 
 /**
@@ -137,7 +171,9 @@ export function buildMonthGrid(
   month: number,
   options?: MonthGridOptions,
 ): BaseDayCell[][] {
-  const today = todayJalali();
+  // `undefined` (or an absent option) means "resolve it yourself"; `null` means
+  // "no cell is today". Distinguishing the two is the whole point.
+  const today = options?.today !== undefined ? options.today : todayJalali();
   const firstWeekday = persianWeekday({ year, month, day: 1 });
   const totalDays = daysInMonth(year, month);
 

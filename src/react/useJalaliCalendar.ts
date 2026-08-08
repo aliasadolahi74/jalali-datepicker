@@ -66,6 +66,17 @@ export interface UseJalaliCalendarOptions {
    * render re-enriches all 42 cells.
    */
   events?: readonly DayEvent[];
+  /**
+   * What counts as today: the `isToday` cell, the "current" month/year markers,
+   * and where «امروز» jumps to. Defaults to {@link todayJalali}, the ambient
+   * timezone — inject it for a calendar that means a fixed locale, or to keep a
+   * server and client render agreeing.
+   *
+   * `null` marks no day as today; «امروز» then falls back to the ambient date,
+   * since the shortcut still needs somewhere to go (pass `showToday={false}` to
+   * drop it entirely).
+   */
+  today?: JalaliDate | null;
   /** `'instant'` commits on click; `'confirm'` stages a draft until `confirm()`. Default `'confirm'`. */
   mode?: CommitMode;
 }
@@ -165,8 +176,17 @@ export function useJalaliCalendar(
     disabledDate,
     holidays = IRAN_HOLIDAYS,
     events,
+    today: todayOption,
     mode = 'confirm',
   } = options;
+
+  // Resolved once per render so every "today" question in this hook — the grid
+  // cell, the current month/year markers, navigation fallbacks — answers the
+  // same way. `null` stays null (nothing is today); only `undefined` resolves.
+  const today = todayOption !== undefined ? todayOption : todayJalali();
+  // Where «امروز» goes. It must land somewhere even when nothing is marked.
+  const todayTarget = today ?? todayJalali();
+  const todayKey = today ? dayKey(today) : 'none';
 
   const isControlled = value !== undefined;
 
@@ -182,7 +202,7 @@ export function useJalaliCalendar(
   const [hoverDate, setHoverDate] = useState<JalaliDate | null>(null);
 
   const firstSelectedDate = selectionDates(committedValue)[0] ?? null;
-  const initialCursor = firstSelectedDate ?? todayJalali();
+  const initialCursor = firstSelectedDate ?? todayTarget;
   const [cursor, setCursor] = useState<{ year: number; month: number }>({
     year: initialCursor.year,
     month: initialCursor.month,
@@ -212,8 +232,11 @@ export function useJalaliCalendar(
   );
 
   const grid = useMemo(
-    () => buildMonthGrid(cursor.year, cursor.month),
-    [cursor.year, cursor.month],
+    () => buildMonthGrid(cursor.year, cursor.month, { today }),
+    // `todayKey` rather than `today`: a caller passing a fresh object literal
+    // every render would otherwise rebuild all 42 cells each time.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cursor.year, cursor.month, todayKey],
   );
 
   // Normalize the current selection (plus any hover preview) into ordered
@@ -343,17 +366,24 @@ export function useJalaliCalendar(
     setView('month');
   }, []);
 
-  const goToToday = useCallback(() => {
-    const today = todayJalali();
-    setCursor({ year: today.year, month: today.month });
-    setView('day');
-    // In single mode the shortcut also selects today; in range mode it only
-    // navigates (selecting an endpoint there would be ambiguous).
-    if (selectionMode === 'single' && !isDayDisabled(today)) {
-      setSelected(today);
-      if (mode === 'instant') commit(today);
-    }
-  }, [selectionMode, isDayDisabled, mode, commit]);
+  const goToToday = useCallback(
+    () => {
+      const today = todayTarget;
+      setCursor({ year: today.year, month: today.month });
+      setView('day');
+      // In single mode the shortcut also selects today; in range mode it only
+      // navigates (selecting an endpoint there would be ambiguous).
+      if (selectionMode === 'single' && !isDayDisabled(today)) {
+        setSelected(today);
+        if (mode === 'instant') commit(today);
+      }
+    },
+    // `todayKey` stands in for `today`/`todayTarget`: both are plain per-render
+    // values, so keying on the date *string* keeps this stable while the day
+    // does not change, whoever supplied it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectionMode, isDayDisabled, mode, commit, todayKey],
+  );
 
   const step = useCallback(
     (direction: 1 | -1) => {
@@ -395,45 +425,59 @@ export function useJalaliCalendar(
 
   const selectedDates = selectionDates(selected);
 
-  const monthOptions = useMemo<MonthOption[]>(() => {
-    const today = todayJalali();
-    return JALALI_MONTHS.map((label, index) => {
-      const month = index + 1;
-      const lastDay = daysInMonth(cursor.year, month);
-      const before =
-        minDate &&
-        compareJalali({ year: cursor.year, month, day: lastDay }, minDate) < 0;
-      const after =
-        maxDate &&
-        compareJalali({ year: cursor.year, month, day: 1 }, maxDate) > 0;
-      return {
-        month,
-        label,
-        isSelected: selectedDates.some(
-          (d) => d.year === cursor.year && d.month === month,
-        ),
-        isCurrent: today.year === cursor.year && today.month === month,
-        isDisabled: Boolean(before || after),
-      };
-    });
-  }, [cursor.year, selectedDates, minDate, maxDate]);
+  const monthOptions = useMemo<MonthOption[]>(
+    () => {
+      return JALALI_MONTHS.map((label, index) => {
+        const month = index + 1;
+        const lastDay = daysInMonth(cursor.year, month);
+        const before =
+          minDate &&
+          compareJalali({ year: cursor.year, month, day: lastDay }, minDate) <
+            0;
+        const after =
+          maxDate &&
+          compareJalali({ year: cursor.year, month, day: 1 }, maxDate) > 0;
+        return {
+          month,
+          label,
+          isSelected: selectedDates.some(
+            (d) => d.year === cursor.year && d.month === month,
+          ),
+          isCurrent: today?.year === cursor.year && today?.month === month,
+          isDisabled: Boolean(before || after),
+        };
+      });
+    },
+    // `todayKey` stands in for `today`/`todayTarget`: both are plain per-render
+    // values, so keying on the date *string* keeps this stable while the day
+    // does not change, whoever supplied it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cursor.year, selectedDates, minDate, maxDate, todayKey],
+  );
 
-  const yearOptions = useMemo<YearOption[]>(() => {
-    const today = todayJalali();
-    const start = pageStartFor(cursor.year);
-    return Array.from({ length: YEARS_PER_PAGE }, (_, index) => {
-      const year = start + index;
-      return {
-        year,
-        label: toPersianDigits(year),
-        isSelected: selectedDates.some((d) => d.year === year),
-        isCurrent: today.year === year,
-        isDisabled: Boolean(
-          (minDate && year < minDate.year) || (maxDate && year > maxDate.year),
-        ),
-      };
-    });
-  }, [cursor.year, selectedDates, minDate, maxDate]);
+  const yearOptions = useMemo<YearOption[]>(
+    () => {
+      const start = pageStartFor(cursor.year);
+      return Array.from({ length: YEARS_PER_PAGE }, (_, index) => {
+        const year = start + index;
+        return {
+          year,
+          label: toPersianDigits(year),
+          isSelected: selectedDates.some((d) => d.year === year),
+          isCurrent: today?.year === year,
+          isDisabled: Boolean(
+            (minDate && year < minDate.year) ||
+            (maxDate && year > maxDate.year),
+          ),
+        };
+      });
+    },
+    // `todayKey` stands in for `today`/`todayTarget`: both are plain per-render
+    // values, so keying on the date *string* keeps this stable while the day
+    // does not change, whoever supplied it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cursor.year, selectedDates, minDate, maxDate, todayKey],
+  );
 
   const headerLabel = useMemo(() => {
     if (view === 'year') {
@@ -455,13 +499,20 @@ export function useJalaliCalendar(
     return result;
   }, [selected, selectionMode, commit]);
 
-  const reset = useCallback(() => {
-    setSelected(committedValue);
-    setHoverDate(null);
-    const anchor = selectionDates(committedValue)[0] ?? todayJalali();
-    setCursor({ year: anchor.year, month: anchor.month });
-    setView('day');
-  }, [committedValue]);
+  const reset = useCallback(
+    () => {
+      setSelected(committedValue);
+      setHoverDate(null);
+      const anchor = selectionDates(committedValue)[0] ?? todayTarget;
+      setCursor({ year: anchor.year, month: anchor.month });
+      setView('day');
+    },
+    // `todayKey` stands in for `today`/`todayTarget`: both are plain per-render
+    // values, so keying on the date *string* keeps this stable while the day
+    // does not change, whoever supplied it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [committedValue, todayKey],
+  );
 
   return {
     view,

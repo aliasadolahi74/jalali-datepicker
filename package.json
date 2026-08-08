@@ -46,6 +46,9 @@
   ],
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:timezones": "TZ=UTC vitest run && TZ=America/New_York vitest run && TZ=Asia/Tehran vitest run",
     "check:dist": "node scripts/check-dist.mjs",
     "demo:dev": "vite --config vite.demo.config.ts",
     "demo:build": "vite build --config vite.demo.config.ts",
@@ -92,6 +95,7 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "husky": "^9.1.7",
     "jalaliday": "^3.1.1",
+    "jsdom": "^30.0.1",
     "lint-staged": "^17.0.8",
     "prettier": "^3.4.2",
     "react": "^19.2.0",
@@ -99,7 +103,8 @@
     "semantic-release": "^25.0.5",
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.18.0",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "vitest": "^4.1.10"
   },
   "publishConfig": {
     "access": "public",
