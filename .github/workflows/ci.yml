@@ -12,7 +12,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22 # jsdom 30's bundled undici needs >=20.18; the
+          # other two workflows already pin 22, so this keeps them aligned
           cache: npm
 
       - name: Install dependencies
