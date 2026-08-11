@@ -19,6 +19,7 @@
   --_selected-fg: var(--jdp-selected-fg, #171717);
   --_range-bg: var(--jdp-range-bg, #eef2f4);
   --_off-fg: var(--jdp-off-fg, #f55959);
+  --_selected-off-fg: var(--jdp-selected-off-fg, var(--_off-fg));
   /* An out-of-month weekend is *both* states at once, so it should read as a
      muted version of the off colour rather than either one outright. Mixed
      toward the background so it stays muted on light and dark themes alike. */
@@ -245,6 +246,12 @@
   color: var(--_selected-fg);
   background: var(--_selected-bg);
   font-weight: 600;
+}
+
+/* Holidays and tinted weekends keep their off-day colour when selected. */
+.daySelected.dayOff,
+.daySelected.dayOff:hover {
+  color: var(--_selected-off-fg);
 }
 
 .day:disabled {
