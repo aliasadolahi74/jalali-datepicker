@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/aliasadolahi74/jalali-datepicker/compare/v1.3.0...v1.3.1) (2026-08-13)
+
+
+### Bug Fixes
+
+* preserve selected off-day colors ([#16](https://github.com/aliasadolahi74/jalali-datepicker/issues/16)) ([e61ecfa](https://github.com/aliasadolahi74/jalali-datepicker/commit/e61ecfa9960140928d567175bba3845ddb93e461))
+
 # [1.3.0](https://github.com/aliasadolahi74/jalali-datepicker/compare/v1.2.0...v1.3.0) (2026-08-08)
 
 
