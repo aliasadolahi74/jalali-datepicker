@@ -427,6 +427,7 @@ Override any of these custom properties on an ancestor to retheme — they casca
 ```
 --jdp-bg            --jdp-fg            --jdp-muted-fg       --jdp-disabled-fg
 --jdp-border        --jdp-hover-bg      --jdp-selected-bg    --jdp-selected-fg
+--jdp-selected-off-fg
 --jdp-range-bg      --jdp-off-fg        --jdp-outside-off-fg --jdp-today-ring
 --jdp-today-bg      --jdp-primary       --jdp-primary-fg     --jdp-focus-ring
 --jdp-radius        --jdp-control-radius --jdp-cell-radius   --jdp-shadow
